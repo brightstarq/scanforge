@@ -1,21 +1,5 @@
 'use strict';
 
-// ── Theme ─────────────────────────────────────────────────────────────────────
-const themeToggle = document.getElementById('themeToggle');
-const themeTxt    = themeToggle?.querySelector('.theme-txt');
-const themeIcon   = themeToggle?.querySelector('.theme-icon');
-
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  localStorage.setItem('scandrift-theme', t);
-  if (themeTxt)  themeTxt.textContent  = t === 'dark' ? 'Light' : 'Dark';
-  if (themeIcon) themeIcon.textContent = t === 'dark' ? '☀️' : '🌙';
-  themeToggle?.setAttribute('aria-label', `Switch to ${t === 'dark' ? 'light' : 'dark'} mode`);
-}
-themeToggle?.addEventListener('click', () => {
-  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-});
-
 // ── Before/After Slider ───────────────────────────────────────────────────────
 const baContainer = document.getElementById('baContainer');
 const baDivider   = document.getElementById('baDivider');

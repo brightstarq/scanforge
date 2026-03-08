@@ -1,6 +1,7 @@
 'use strict';
 
-const STORAGE_KEY = 'scanforge-theme';
+
+const STORAGE_KEY = 'scandrift-theme';
 const ROOT = document.documentElement;
 
 function applyTheme(theme) {
