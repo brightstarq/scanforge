@@ -806,7 +806,83 @@
     <a href="#features">Features</a>
   </nav>
 </footer>
+<div class="sig-modal-backdrop" id="sigModalBackdrop" role="dialog" aria-modal="true" aria-label="Signature placement">
+  <div class="sig-modal">
+    <div class="sig-modal-header">
+      <span>Place Signature</span>
+      <button class="sig-modal-close" id="sigModalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="sig-modal-body">
 
+      <!-- Left: create signature -->
+      <div class="sig-create-panel">
+        <div class="sig-tabs" role="tablist">
+          <button class="sig-tab active" id="tabDraw" role="tab" aria-selected="true">✏ Draw</button>
+          <button class="sig-tab" id="tabUpload" role="tab" aria-selected="false">↑ Upload</button>
+        </div>
+
+        <!-- Draw panel -->
+        <div id="panelDraw">
+          <div class="sig-canvas-wrap">
+            <canvas id="sigCanvas" width="360" height="150" aria-label="Draw your signature"></canvas>
+            <span class="sig-canvas-hint">Sign here</span>
+          </div>
+          <div class="sig-draw-controls">
+            <div class="sig-colors" role="radiogroup" aria-label="Ink color">
+              <label class="sig-color-opt" title="Black"><input type="radio" name="sigColor" value="#0a0a0a" checked><span style="background:#0a0a0a"></span></label>
+              <label class="sig-color-opt" title="Blue ink"><input type="radio" name="sigColor" value="#1a3a8f"><span style="background:#1a3a8f"></span></label>
+              <label class="sig-color-opt" title="Dark red"><input type="radio" name="sigColor" value="#7f1d1d"><span style="background:#7f1d1d"></span></label>
+            </div>
+            <button type="button" class="sig-clear-btn" id="clearSigBtn">Clear</button>
+          </div>
+        </div>
+
+        <!-- Upload panel -->
+        <div id="panelUpload" style="display:none">
+          <div class="sig-upload-zone" id="sigUploadZone" role="button" tabindex="0">
+            <input type="file" id="sigFileInput" accept="image/png,image/jpeg,image/webp" style="display:none">
+            <p>Click to upload signature</p>
+            <p class="sig-upload-hint">PNG with transparent background works best</p>
+          </div>
+          <img id="sigUploadPreview" style="display:none;max-width:100%;max-height:140px;margin-top:8px;border-radius:4px;" alt="Uploaded signature">
+        </div>
+
+        <div class="sig-page-row">
+          <label class="field-lbl" for="sigPageSelect">Apply to</label>
+          <select id="sigPageSelect">
+            <option value="last">Last page</option>
+            <option value="all">All pages</option>
+            <option value="1">Page 1 only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Right: position on page preview -->
+      <div class="sig-position-panel">
+        <p class="sig-position-label">Drag to position · Corner to resize</p>
+        <div class="sig-preview-container" id="sigPreviewContainer">
+          <img id="sigPageThumb" alt="Document page preview" style="display:none;">
+          <div id="sigOverlay" class="sig-overlay" style="display:none;">
+            <span class="sig-angle-badge" id="sigAngleBadge">0°</span>
+            <div class="sig-rotate-stem"></div>
+            <div class="sig-rotate-handle" id="sigRotateHandle" title="Drag to rotate">↻</div>
+            <img id="sigOverlayImg" alt="Signature overlay">
+            <div class="sig-resize-handle" id="sigResizeHandle"></div>
+          </div>
+          <div class="sig-preview-placeholder" id="sigPreviewPlaceholder">
+            <span>Upload a document first<br>to position the signature</span>
+          </div>
+        </div>
+        <p class="sig-drag-hint">← Drag the signature · Resize from corner →</p>
+      </div>
+    </div>
+
+    <div class="sig-modal-footer">
+      <button type="button" class="sig-cancel-btn" id="sigCancelBtn">Cancel</button>
+      <button type="button" class="sig-confirm-btn" id="sigConfirmBtn">Confirm Position</button>
+    </div>
+  </div>
+</div>
 </div>
 <script src="theme.js" ></script>
 <script src="script.js" defer></script>

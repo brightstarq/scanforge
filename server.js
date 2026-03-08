@@ -117,6 +117,15 @@ app.post('/process', upload.fields([
     rotation:          parseFloat(req.body.rotation           ?? 0.4),
     crumple:           req.body.crumple           === 'true',
     crumpleIntensity:  parseFloat(req.body.crumpleIntensity   ?? 1.0),
+    streaks:           req.body.streaks           === 'true',
+    dust:              req.body.dust              === 'true',
+    unevenAging:       req.body.unevenAging       === 'true',
+    pageWarp:          req.body.pageWarp          === 'true',
+    warpIntensity:     parseFloat(req.body.warpIntensity      ?? 1.0),
+    spineCurve:        req.body.spineCurve        === 'true',
+    lampBanding:       req.body.lampBanding       === 'true',
+    paperTexture:      req.body.paperTexture      === 'true',
+    edgeVignette:      req.body.edgeVignette      === 'true',
   };
 
   const isMultiUpload = allFiles.length > 1;

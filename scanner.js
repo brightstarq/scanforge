@@ -120,8 +120,14 @@ export async function applyScanEffect(imgBuffer, opts = {}) {
     bindingShadow = false,
     sharpness     = 1,
     rotation      = 0.4,
-    crease        = false,  // NEW: diagonal fold/crease line
-    inkBleed      = false,  // NEW: subtle dark halo around text edges
+    crease        = false,  // diagonal fold/crease line
+    inkBleed      = false,  // subtle dark halo around text edges
+    streaks       = false,  // vertical sensor streak lines
+    dust          = false,  // dust particles on scanner glass
+    unevenAging   = false,  // fbm-modulated paper yellowing
+    lampBanding   = false,  // horizontal brightness waves from lamp instability
+    paperTexture  = false,  // low-frequency fbm paper fiber surface
+    edgeVignette  = false,  // lens falloff darkening at page edges
   } = opts;
 
   // ── 1. Base colour adjustments
@@ -162,7 +168,27 @@ export async function applyScanEffect(imgBuffer, opts = {}) {
     }
   }
 
-  // ── 5. Binding / spine shadow
+  // ── 5. Paper fiber texture (low-frequency FBM surface)
+  // Real paper has long-range brightness variation from cellulose fibers and
+  // surface irregularities. Adds subtle ±6-luma waves across the page.
+  if (paperTexture) {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const i   = (y * width + x) * channels;
+        const luma = channels >= 3
+          ? pixels[i] * 0.299 + pixels[i+1] * 0.587 + pixels[i+2] * 0.114
+          : pixels[i];
+        // Only apply to paper/background — skip ink pixels
+        if (luma < 160) continue;
+        const tex = fbm(x * 0.0022, y * 0.0022, 222, 3) * 6;
+        for (let c = 0; c < Math.min(channels, 3); c++) {
+          pixels[i + c] = Math.max(0, Math.min(255, pixels[i + c] + tex));
+        }
+      }
+    }
+  }
+
+  // ── 6. Binding / spine shadow
   if (bindingShadow) {
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width * 0.05; x++) {
@@ -261,22 +287,126 @@ export async function applyScanEffect(imgBuffer, opts = {}) {
     pixels.set(bleedPixels);
   }
 
-  // ── 10. Warm colour-temperature shift
+  // ── 10. Warm colour-temperature shift (flat or fbm-modulated)
   if (yellowTint > 0 && channels >= 3) {
-    for (let i = 0; i < pixels.length; i += channels) {
-      pixels[i]     = Math.min(255, pixels[i]     * (1.02 + yellowTint * 0.02));
-      pixels[i + 1] = Math.min(255, pixels[i + 1] * 1.01);
-      pixels[i + 2] = Math.max(0,   pixels[i + 2] * (0.98 - yellowTint * 0.01));
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * channels;
+
+        // Uneven aging: modulate yellowTint with low-frequency fbm noise
+        // so some areas of the paper are more yellowed than others
+        const agingBias = unevenAging
+          ? yellowTint + fbm(x * 0.004, y * 0.004, 77, 4) * (yellowTint * 0.65)
+          : yellowTint;
+        const t = Math.max(0, agingBias);
+
+        pixels[i]     = Math.min(255, pixels[i]     * (1.02 + t * 0.02));
+        pixels[i + 1] = Math.min(255, pixels[i + 1] * 1.01);
+        pixels[i + 2] = Math.max(0,   pixels[i + 2] * (0.98 - t * 0.01));
+      }
     }
   }
 
-  // ── 11. PNG encode — lossless, zero block artifacts on text edges
+  // ── 11. Vertical sensor streaks
+  // Old/dirty scanners produce faint vertical lines from dust on the CCD bar.
+  if (streaks) {
+    const numStreaks = 1 + Math.floor(Math.random() * 3); // 1–3 streaks per page
+    for (let s = 0; s < numStreaks; s++) {
+      const sx       = Math.floor(Math.random() * width);
+      const strength = 0.03 + Math.random() * 0.055; // subtle: 3–8% darkening
+      const w        = Math.random() < 0.5 ? 1 : 2;  // 1 or 2 px wide
+      for (let y = 0; y < height; y++) {
+        for (let dx = 0; dx < w; dx++) {
+          const px = sx + dx;
+          if (px >= width) continue;
+          const i = (y * width + px) * channels;
+          // Only darken paper pixels, not text — keeps text legible
+          const luma = pixels[i] * 0.299 + pixels[i+1] * 0.587 + pixels[i+2] * 0.114;
+          if (luma < 140) continue;
+          for (let c = 0; c < Math.min(channels, 3); c++) {
+            pixels[i + c] = Math.max(0, Math.round(pixels[i + c] * (1 - strength)));
+          }
+        }
+      }
+    }
+  }
+
+  // ── 12. Dust particles on scanner glass
+  // Small dark specks randomly placed — radius 1–3px, soft edges.
+  if (dust) {
+    const numDust = 4 + Math.floor(Math.random() * 10); // 4–13 particles
+    for (let d = 0; d < numDust; d++) {
+      const cx      = Math.floor(Math.random() * width);
+      const cy      = Math.floor(Math.random() * height);
+      const radius  = 1 + Math.random() * 2.5;           // 1–3.5 px
+      const opacity = 0.25 + Math.random() * 0.55;       // 25–80% dark
+      const r       = Math.ceil(radius);
+
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          const px = cx + dx, py = cy + dy;
+          if (px < 0 || px >= width || py < 0 || py >= height) continue;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist > radius) continue;
+          // Soft falloff — centre is darkest
+          const falloff = 1 - dist / radius;
+          const strength = opacity * falloff * falloff;
+          const i = (py * width + px) * channels;
+          for (let c = 0; c < Math.min(channels, 3); c++) {
+            pixels[i + c] = Math.max(0, Math.round(pixels[i + c] * (1 - strength)));
+          }
+        }
+      }
+    }
+  }
+
+  // ── 13. Lamp banding — horizontal brightness waves from lamp instability
+  // Old fluorescent scanner lamps flicker at a frequency that produces faint
+  // sinusoidal brightness banding across rows. Freq and phase are randomised
+  // per-page so no two scans look the same.
+  if (lampBanding) {
+    const freq     = 0.0018 + Math.random() * 0.0022; // cycles per pixel
+    const strength = 0.012  + Math.random() * 0.018;  // max ±1.2–3%
+    const phase    = Math.random() * Math.PI * 2;
+    for (let y = 0; y < height; y++) {
+      const band = 1 + Math.sin(y * freq + phase) * strength;
+      for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * channels;
+        for (let c = 0; c < Math.min(channels, 3); c++) {
+          pixels[i + c] = Math.min(255, Math.max(0, pixels[i + c] * band));
+        }
+      }
+    }
+  }
+
+  // ── 14. Edge vignette — lens / glass falloff at page corners
+  // Flatbed scanner glass and optics produce a subtle radial darkening toward
+  // the edges. More pronounced in cheaper scanners. Separate from the lamp
+  // illumination falloff (step 4) which models lamp geometry.
+  if (edgeVignette) {
+    const cx = width  / 2;
+    const cy = height / 2;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const dx     = (x - cx) / cx;
+        const dy     = (y - cy) / cy;
+        const dist   = Math.sqrt(dx * dx + dy * dy); // 0 at centre, ~1.4 at corners
+        const factor = Math.max(0.82, 1 - dist * 0.09);
+        const i = (y * width + x) * channels;
+        for (let c = 0; c < Math.min(channels, 3); c++) {
+          pixels[i + c] = Math.max(0, Math.round(pixels[i + c] * factor));
+        }
+      }
+    }
+  }
+
+  // ── 15. PNG encode — lossless, zero block artifacts on text edges
   return sharp(Buffer.from(pixels), { raw: { width, height, channels } })
     .png({ compressionLevel: 6 })
     .toBuffer();
 }
 
-// ─── Full Pipeline: deskew → manual skew → scan effect → crumple ─────────────
+// ─── Full Pipeline: deskew → manual skew → scan effect → warp → crumple ───────
 export async function processPage(imgBuffer, opts = {}) {
   let buf = imgBuffer;
 
@@ -291,7 +421,15 @@ export async function processPage(imgBuffer, opts = {}) {
 
   buf = await applyScanEffect(buf, opts);
 
-  // Crumple runs after scan effect so grain/tint bake into the warped surface
+  // Displacement warp runs after scan so grain/tint travel with the geometry
+  if (opts.pageWarp) {
+    buf = await applyDisplacementWarp(buf, {
+      warpIntensity: opts.warpIntensity ?? 1.0,
+      spineCurve:    opts.spineCurve    ?? false,
+    });
+  }
+
+  // Crumple runs last — paper damage on top of geometry
   if (opts.crumple) {
     buf = await applyCrumpleEffect(buf, {
       crumpleIntensity: opts.crumpleIntensity ?? 1.0,
@@ -299,6 +437,97 @@ export async function processPage(imgBuffer, opts = {}) {
   }
 
   return buf;
+}
+
+// ─── Displacement Map Page Warping ───────────────────────────────────────────
+// Three layered fbm frequencies simulate:
+//   low  freq → overall page curvature / bending
+//   mid  freq → paper waviness / uneven glass pressure
+//   high freq → micro fiber distortion
+// Bilinear interpolation keeps edges smooth (no nearest-neighbour blockiness).
+export async function applyDisplacementWarp(imgBuffer, opts = {}) {
+  const intensity  = Math.max(0, Math.min(3, opts.warpIntensity ?? 1.0));
+  const spineCurve = opts.spineCurve ?? false;
+  if (intensity === 0) return imgBuffer;
+
+  const { data, info } = await sharp(imgBuffer)
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { width: W, height: H, channels } = info;
+  const src    = new Uint8ClampedArray(data);
+  const output = new Uint8ClampedArray(src.length);
+
+  // Seed varies per call so each page warps differently
+  const seed = Math.random() * 500 | 0;
+
+  // ── Bilinear sample from source ──────────────────────────────────────────
+  function sample(sx, sy) {
+    // Clamp to edge — fills out-of-bounds with edge pixels (no hard black border)
+    sx = Math.max(0, Math.min(W - 1.001, sx));
+    sy = Math.max(0, Math.min(H - 1.001, sy));
+
+    const x0 = sx | 0, y0 = sy | 0;
+    const x1 = Math.min(x0 + 1, W - 1);
+    const y1 = Math.min(y0 + 1, H - 1);
+    const fx = sx - x0, fy = sy - y0;
+
+    const result = new Array(channels);
+    for (let c = 0; c < channels; c++) {
+      const i00 = (y0 * W + x0) * channels + c;
+      const i10 = (y0 * W + x1) * channels + c;
+      const i01 = (y1 * W + x0) * channels + c;
+      const i11 = (y1 * W + x1) * channels + c;
+      result[c] = lerp(lerp(src[i00], src[i10], fx), lerp(src[i01], src[i11], fx), fy);
+    }
+    return result;
+  }
+
+  for (let y = 0; y < H; y++) {
+    const ny = y / H; // normalised 0–1
+
+    for (let x = 0; x < W; x++) {
+      const nx = x / W;
+
+      // ── Three-layer displacement field ────────────────────────────────────
+      // Layer 1: slow page-level curvature (3 px max at intensity 1)
+      const dx1 = fbm(nx * 2,  ny * 2,  seed,       3) * 3  * intensity;
+      const dy1 = fbm(nx * 2,  ny * 2,  seed + 100, 3) * 3  * intensity;
+      // Layer 2: mid-freq paper waviness (1.5 px max)
+      const dx2 = fbm(nx * 8,  ny * 8,  seed + 200, 2) * 1.5 * intensity;
+      const dy2 = fbm(nx * 8,  ny * 8,  seed + 300, 2) * 1.5 * intensity;
+      // Layer 3: micro fiber distortion (0.5 px max — subtle texture feel)
+      const dx3 = fbm(nx * 25, ny * 25, seed + 400, 1) * 0.5 * intensity;
+      const dy3 = fbm(nx * 25, ny * 25, seed + 500, 1) * 0.5 * intensity;
+
+      let totalDx = dx1 + dx2 + dx3;
+      let totalDy = dy1 + dy2 + dy3;
+
+      // ── Spine curvature (book scan mode) ──────────────────────────────────
+      // Pages bend upward near the spine (left edge). Horizontal compression
+      // increases toward x=0, simulating a book held open on a flatbed.
+      if (spineCurve) {
+        // Sigmoid falloff — strong near left edge, fades to zero at center
+        const spineFade   = Math.max(0, 1 - nx * 3.5);
+        const spineShift  = Math.sin(ny * Math.PI) * 5 * intensity * spineFade;
+        totalDx += spineShift;
+        // Slight vertical pull toward spine binding
+        const vertPull    = Math.cos(ny * Math.PI - Math.PI / 2) * 2 * intensity * spineFade;
+        totalDy += vertPull;
+      }
+
+      // Sample source at displaced coordinates (backward mapping)
+      const sampled = sample(x + totalDx, y + totalDy);
+      const oi = (y * W + x) * channels;
+      for (let c = 0; c < channels; c++) {
+        output[oi + c] = sampled[c];
+      }
+    }
+  }
+
+  return sharp(Buffer.from(output), { raw: { width: W, height: H, channels } })
+    .png({ compressionLevel: 6 })
+    .toBuffer();
 }
 
 // ─── Composite Signature onto Page ───────────────────────────────────────────
