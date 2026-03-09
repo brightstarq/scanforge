@@ -10,6 +10,14 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+// pdfjs bundled fonts — must be a file:// URL with trailing slash.
+// Using a bare filesystem path works on Linux but breaks if pdfjs ever
+// treats it as a URL prefix. This form is unambiguous.
+const STANDARD_FONT_DATA_URL = new URL(
+  'node_modules/pdfjs-dist/standard_fonts/',
+  import.meta.url
+).href;
 const app = express();
 
 const ACCEPTED_TYPES = new Set([
@@ -33,21 +41,38 @@ const upload = multer({
 app.use(express.static(join(__dirname, 'public')));
 app.use(express.json());
 
+// Hard timeout — prevents runaway requests holding large buffers indefinitely
+app.use((req, res, next) => {
+  req.setTimeout(120_000, () => {
+    res.status(503).json({ error: 'Request timed out' });
+  });
+  next();
+});
+
 app.get('/health', (_, res) => res.json({ status: 'ok', node: process.version }));
 
 async function pdfToImages(pdfBuffer, dpi = 300) {
   const scale = dpi / 96;
   const pdf = await getDocument({
-    data: new Uint8Array(pdfBuffer),
-    useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true,
+    data:                 new Uint8Array(pdfBuffer.buffer, pdfBuffer.byteOffset, pdfBuffer.byteLength),
+    standardFontDataUrl:  STANDARD_FONT_DATA_URL,  // use bundled Foxit fonts
+    useWorkerFetch:       false,
+    isEvalSupported:      false,
+    useSystemFonts:       false,  // false — system fonts cause "ignoring character" warnings
   }).promise;
   const buffers = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page     = await pdf.getPage(i);
-    const viewport = page.getViewport({ scale });
-    const canvas   = createCanvas(Math.round(viewport.width), Math.round(viewport.height));
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-    buffers.push(canvas.toBuffer('image/png'));
+  try {
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page     = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale });
+      const canvas   = createCanvas(Math.round(viewport.width), Math.round(viewport.height));
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      const raw = canvas.toBuffer('image/png');
+      buffers.push(new Uint8Array(raw.buffer, raw.byteOffset, raw.byteLength));
+      page.cleanup(); // release font data + image xObjects for this page immediately
+    }
+  } finally {
+    pdf.destroy(); // CRITICAL — releases font cache, decoded streams, worker memory
   }
   return buffers;
 }
@@ -65,7 +90,7 @@ async function buffersToPdf(processedBuffers) {
     const page = pdfDoc.addPage([A4_W, A4_H]);
     page.drawImage(png, { x:(A4_W-drawW)/2, y:(A4_H-drawH)/2, width:drawW, height:drawH });
   }
-  return Buffer.from(await pdfDoc.save());
+  return new Uint8Array(await pdfDoc.save());
 }
 
 // ── POST /preview ─────────────────────────────────────────────────────────────
@@ -137,13 +162,14 @@ app.post('/process', upload.fields([
   console.log(`⚙  ${isMultiUpload ? `${allFiles.length} images` : allFiles[0].originalname} | dpi:${opts.dpi} fmt:${opts.format}`);
 
   try {
-    // 1. Render all files to PNG buffer arrays
+    // 1. Render all files to Uint8Array page arrays
     let pageBuffers = [];
 
     for (const file of allFiles) {
       const isImg = IMAGE_TYPES.has(file.mimetype);
       if (isImg) {
-        pageBuffers.push(file.buffer);
+        const b = file.buffer;
+        pageBuffers.push(new Uint8Array(b.buffer, b.byteOffset, b.byteLength));
       } else {
         // PDF — render each page
         const pages = await pdfToImages(file.buffer, opts.dpi);
@@ -154,18 +180,26 @@ app.post('/process', upload.fields([
 
     console.log(`   ${pageBuffers.length} page(s) total`);
 
-    // Apply scan effect (concurrency 4)
-    const CONCURRENCY = 4;
+    // Concurrency: warp and crumple each hold 2-3 full raw buffers per page.
+    // At 300 DPI A4 (~26 MB per buffer) running 4 pages in parallel hits ~400 MB.
+    // Drop to 1 when expensive pixel-pass effects are on, 2 otherwise.
+    const heavyEffects = opts.pageWarp || opts.crumple || opts.unevenAging || opts.paperTexture;
+    const CONCURRENCY = heavyEffects ? 1 : 2;
     const processedBuffers = new Array(pageBuffers.length);
     for (let i = 0; i < pageBuffers.length; i += CONCURRENCY) {
       const chunk   = pageBuffers.slice(i, i + CONCURRENCY);
       const results = await Promise.all(chunk.map(buf => processPage(buf, opts)));
-      results.forEach((buf, j) => (processedBuffers[i + j] = buf));
+      results.forEach((buf, j) => {
+        processedBuffers[i + j] = buf;
+        pageBuffers[i + j] = null; // release input buffer — allow GC between chunks
+      });
     }
+    pageBuffers = null; // release entire input array
 
     // Composite signature
     if (req.body.sigData) {
-      const sigBuf     = Buffer.from(req.body.sigData, 'base64');
+      const decoded    = Buffer.from(req.body.sigData, 'base64');
+      const sigBuf     = new Uint8Array(decoded.buffer, decoded.byteOffset, decoded.byteLength);
       const xPct       = parseFloat(req.body.sigX ?? 0.6);
       const yPct       = parseFloat(req.body.sigY ?? 0.85);
       const wPct       = parseFloat(req.body.sigW ?? 0.2);

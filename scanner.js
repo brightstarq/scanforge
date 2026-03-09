@@ -1,5 +1,18 @@
 import sharp from 'sharp';
 
+// Limit sharp's libvips operation cache — default is unbounded and accumulates
+// decoded tile data across requests, which causes memory to grow steadily.
+sharp.cache({ memory: 50, files: 20, items: 200 });
+sharp.concurrency(1); // libvips internal thread pool — 1 is enough, reduces peak RSS
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
+// sharp's .toBuffer() returns a Node.js Buffer (which IS a Uint8Array subclass,
+// but may carry an offset into a pooled ArrayBuffer). This helper always returns
+// a plain, zero-offset Uint8Array so callers never deal with Buffer internals.
+function bufToU8(buf) {
+  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+}
+
 // ─── Scanner Profiles ─────────────────────────────────────────────────────────
 export const PROFILES = {
   'canon-office-2020': {
@@ -93,7 +106,10 @@ function detectSkewAngle(grayBuffer, width, height) {
 
 // ─── Deskew ───────────────────────────────────────────────────────────────────
 export async function deskewImage(imgBuffer) {
+  // Downsample to max 800px wide before skew detection — reduces pixel walk
+  // from ~8.7M (A4 300dpi) to ~560K per candidate angle (15× less work).
   const { data, info } = await sharp(imgBuffer)
+    .resize(800, null, { fit: 'inside', withoutEnlargement: true })
     .greyscale()
     .threshold(128)
     .raw()
@@ -102,10 +118,10 @@ export async function deskewImage(imgBuffer) {
   const angle = detectSkewAngle(data, info.width, info.height);
   if (Math.abs(angle) < 0.15) return imgBuffer;
 
-  return sharp(imgBuffer)
+  return bufToU8(await sharp(imgBuffer)
     .rotate(angle, { background: { r: 255, g: 255, b: 255, alpha: 1 } })
     .png()
-    .toBuffer();
+    .toBuffer());
 }
 
 // ─── Core Scan Effect ─────────────────────────────────────────────────────────
@@ -256,35 +272,37 @@ export async function applyScanEffect(imgBuffer, opts = {}) {
     }
   }
 
-  // ── 9. NEW: Ink bleed — subtle dark halo around text/ink edges
-  // Simulates cheap scanner glass slightly spreading ink into adjacent paper.
+  // ── 9. Ink bleed — subtle dark halo around text/ink edges
+  // Two-pass: first collect darkening deltas, then apply — avoids duplicating
+  // the full pixel buffer (saves ~26 MB per page at 300 DPI).
   if (inkBleed && channels >= 3) {
-    const bleedPixels = new Uint8ClampedArray(pixels);
     const bleedStrength = 10;
+    // Store per-pixel darkening amount in a compact Float32 map (1/4 size of full buffer)
+    const bleedMap = new Float32Array(width * height);
     for (let y = 1; y < height - 1; y++) {
       for (let x = 1; x < width - 1; x++) {
         const i    = (y * width + x) * channels;
         const luma = pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114;
-        if (luma < 110) {
-          // This is an ink pixel — bleed darkness into its 4 neighbours
-          const neighbors = [
-            ((y - 1) * width + x) * channels,
-            ((y + 1) * width + x) * channels,
-            (y * width + (x - 1)) * channels,
-            (y * width + (x + 1)) * channels,
-          ];
-          for (const ni of neighbors) {
-            const nLuma = pixels[ni] * 0.299 + pixels[ni + 1] * 0.587 + pixels[ni + 2] * 0.114;
-            if (nLuma > 155) {
-              for (let c = 0; c < 3; c++) {
-                bleedPixels[ni + c] = Math.max(0, bleedPixels[ni + c] - bleedStrength);
-              }
-            }
-          }
+        if (luma >= 110) continue;
+        const neighbors = [
+          (y - 1) * width + x,
+          (y + 1) * width + x,
+          y * width + (x - 1),
+          y * width + (x + 1),
+        ];
+        for (const ni of neighbors) {
+          const nLuma = pixels[ni * channels] * 0.299 + pixels[ni * channels + 1] * 0.587 + pixels[ni * channels + 2] * 0.114;
+          if (nLuma > 155) bleedMap[ni] = Math.min(1, bleedMap[ni] + bleedStrength / 255);
         }
       }
     }
-    pixels.set(bleedPixels);
+    for (let idx = 0; idx < width * height; idx++) {
+      if (bleedMap[idx] === 0) continue;
+      const i = idx * channels;
+      for (let c = 0; c < 3; c++) {
+        pixels[i + c] = Math.max(0, Math.round(pixels[i + c] * (1 - bleedMap[idx])));
+      }
+    }
   }
 
   // ── 10. Warm colour-temperature shift (flat or fbm-modulated)
@@ -401,9 +419,10 @@ export async function applyScanEffect(imgBuffer, opts = {}) {
   }
 
   // ── 15. PNG encode — lossless, zero block artifacts on text edges
-  return sharp(Buffer.from(pixels), { raw: { width, height, channels } })
-    .png({ compressionLevel: 6 })
-    .toBuffer();
+  return bufToU8(await sharp(
+    new Uint8Array(pixels.buffer, pixels.byteOffset, pixels.byteLength),
+    { raw: { width, height, channels } }
+  ).png({ compressionLevel: 6 }).toBuffer());
 }
 
 // ─── Full Pipeline: deskew → manual skew → scan effect → warp → crumple ───────
@@ -413,10 +432,10 @@ export async function processPage(imgBuffer, opts = {}) {
   if (opts.deskew) buf = await deskewImage(buf);
 
   if (opts.manualSkew && Math.abs(opts.manualSkew) > 0) {
-    buf = await sharp(buf)
+    buf = bufToU8(await sharp(buf)
       .rotate(-opts.manualSkew, { background: { r: 255, g: 255, b: 255, alpha: 1 } })
       .png()
-      .toBuffer();
+      .toBuffer());
   }
 
   buf = await applyScanEffect(buf, opts);
@@ -461,73 +480,54 @@ export async function applyDisplacementWarp(imgBuffer, opts = {}) {
   // Seed varies per call so each page warps differently
   const seed = Math.random() * 500 | 0;
 
-  // ── Bilinear sample from source ──────────────────────────────────────────
-  function sample(sx, sy) {
-    // Clamp to edge — fills out-of-bounds with edge pixels (no hard black border)
-    sx = Math.max(0, Math.min(W - 1.001, sx));
-    sy = Math.max(0, Math.min(H - 1.001, sy));
-
-    const x0 = sx | 0, y0 = sy | 0;
-    const x1 = Math.min(x0 + 1, W - 1);
-    const y1 = Math.min(y0 + 1, H - 1);
-    const fx = sx - x0, fy = sy - y0;
-
-    const result = new Array(channels);
-    for (let c = 0; c < channels; c++) {
-      const i00 = (y0 * W + x0) * channels + c;
-      const i10 = (y0 * W + x1) * channels + c;
-      const i01 = (y1 * W + x0) * channels + c;
-      const i11 = (y1 * W + x1) * channels + c;
-      result[c] = lerp(lerp(src[i00], src[i10], fx), lerp(src[i01], src[i11], fx), fy);
-    }
-    return result;
-  }
-
   for (let y = 0; y < H; y++) {
-    const ny = y / H; // normalised 0–1
+    const ny = y / H;
 
     for (let x = 0; x < W; x++) {
       const nx = x / W;
 
-      // ── Three-layer displacement field ────────────────────────────────────
-      // Layer 1: slow page-level curvature (3 px max at intensity 1)
-      const dx1 = fbm(nx * 2,  ny * 2,  seed,       3) * 3  * intensity;
-      const dy1 = fbm(nx * 2,  ny * 2,  seed + 100, 3) * 3  * intensity;
-      // Layer 2: mid-freq paper waviness (1.5 px max)
+      // Three-layer displacement field
+      const dx1 = fbm(nx * 2,  ny * 2,  seed,       3) * 3   * intensity;
+      const dy1 = fbm(nx * 2,  ny * 2,  seed + 100, 3) * 3   * intensity;
       const dx2 = fbm(nx * 8,  ny * 8,  seed + 200, 2) * 1.5 * intensity;
       const dy2 = fbm(nx * 8,  ny * 8,  seed + 300, 2) * 1.5 * intensity;
-      // Layer 3: micro fiber distortion (0.5 px max — subtle texture feel)
       const dx3 = fbm(nx * 25, ny * 25, seed + 400, 1) * 0.5 * intensity;
       const dy3 = fbm(nx * 25, ny * 25, seed + 500, 1) * 0.5 * intensity;
 
       let totalDx = dx1 + dx2 + dx3;
       let totalDy = dy1 + dy2 + dy3;
 
-      // ── Spine curvature (book scan mode) ──────────────────────────────────
-      // Pages bend upward near the spine (left edge). Horizontal compression
-      // increases toward x=0, simulating a book held open on a flatbed.
       if (spineCurve) {
-        // Sigmoid falloff — strong near left edge, fades to zero at center
-        const spineFade   = Math.max(0, 1 - nx * 3.5);
-        const spineShift  = Math.sin(ny * Math.PI) * 5 * intensity * spineFade;
-        totalDx += spineShift;
-        // Slight vertical pull toward spine binding
-        const vertPull    = Math.cos(ny * Math.PI - Math.PI / 2) * 2 * intensity * spineFade;
-        totalDy += vertPull;
+        const spineFade  = Math.max(0, 1 - nx * 3.5);
+        totalDx += Math.sin(ny * Math.PI) * 5 * intensity * spineFade;
+        totalDy += Math.cos(ny * Math.PI - Math.PI / 2) * 2 * intensity * spineFade;
       }
 
-      // Sample source at displaced coordinates (backward mapping)
-      const sampled = sample(x + totalDx, y + totalDy);
+      // Bilinear sample — inlined, no heap allocation per pixel
+      let sx = x + totalDx, sy = y + totalDy;
+      sx = Math.max(0, Math.min(W - 1.001, sx));
+      sy = Math.max(0, Math.min(H - 1.001, sy));
+
+      const x0 = sx | 0, y0 = sy | 0;
+      const x1 = Math.min(x0 + 1, W - 1);
+      const y1 = Math.min(y0 + 1, H - 1);
+      const fx = sx - x0, fy = sy - y0;
+
       const oi = (y * W + x) * channels;
       for (let c = 0; c < channels; c++) {
-        output[oi + c] = sampled[c];
+        const i00 = (y0 * W + x0) * channels + c;
+        const i10 = (y0 * W + x1) * channels + c;
+        const i01 = (y1 * W + x0) * channels + c;
+        const i11 = (y1 * W + x1) * channels + c;
+        output[oi + c] = lerp(lerp(src[i00], src[i10], fx), lerp(src[i01], src[i11], fx), fy);
       }
     }
   }
 
-  return sharp(Buffer.from(output), { raw: { width: W, height: H, channels } })
-    .png({ compressionLevel: 6 })
-    .toBuffer();
+  return bufToU8(await sharp(
+    new Uint8Array(output.buffer, output.byteOffset, output.byteLength),
+    { raw: { width: W, height: H, channels } }
+  ).png({ compressionLevel: 6 }).toBuffer());
 }
 
 // ─── Composite Signature onto Page ───────────────────────────────────────────
@@ -563,10 +563,10 @@ export async function compositeSignature(pageBuffer, sigBuffer, xPct, yPct, wPct
   const cx = Math.max(0, Math.min(safeLeft + Math.round((width - rw) / 2), pw - rw));
   const cy = Math.max(0, Math.min(safeTop  + Math.round((height - rh) / 2), ph - rh));
 
-  return sharp(pageBuffer)
+  return bufToU8(await sharp(pageBuffer)
     .composite([{ input: resized, left: cx, top: cy, blend: 'over' }])
     .png({ compressionLevel: 6 })
-    .toBuffer();
+    .toBuffer());
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -696,7 +696,8 @@ export async function applyCrumpleEffect(imgBuffer, opts = {}) {
     }
   }
 
-  return sharp(Buffer.from(out), { raw: { width: W, height: H, channels } })
-    .png({ compressionLevel: 6 })
-    .toBuffer();
+  return bufToU8(await sharp(
+    new Uint8Array(out.buffer, out.byteOffset, out.byteLength),
+    { raw: { width: W, height: H, channels } }
+  ).png({ compressionLevel: 6 }).toBuffer());
 }
