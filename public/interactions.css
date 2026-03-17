@@ -1,0 +1,256 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCANDRIFT — interactions.css
+   Bold & tactile: Buttons, Dropzone, Preset/Format cards, Selects only.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Keyboard focus ring ─────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BUTTONS — bold press, strong bounce, heavy glow
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Submit / Apply Scan Effect ─────────────────────────────────────────── */
+.submit-btn {
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.14s ease,
+              filter 0.12s ease;
+  position: relative;
+  overflow: hidden;
+}
+.submit-btn:not(:disabled):hover {
+  transform: translateY(-3px) scale(1.015);
+  box-shadow: 0 10px 32px rgba(200, 169, 110, 0.5),
+              0 4px 12px rgba(200, 169, 110, 0.3);
+  filter: brightness(1.12);
+}
+.submit-btn:not(:disabled):active {
+  transform: translateY(3px) scale(0.965);
+  box-shadow: 0 2px 6px rgba(200, 169, 110, 0.2);
+  filter: brightness(0.9);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.06s ease;
+}
+.submit-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+/* Ripple */
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.submit-btn:not(:disabled):active::before {
+  transform: scale(2.5);
+  opacity: 1;
+  transition: transform 0s, opacity 0s;
+}
+
+/* ── Pay $5 button ──────────────────────────────────────────────────────── */
+.pay-btn {
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.14s ease,
+              filter 0.12s ease;
+}
+.pay-btn:not(:disabled):hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 14px 36px rgba(200, 169, 110, 0.55),
+              0 6px 14px rgba(200, 169, 110, 0.3);
+  filter: brightness(1.14);
+}
+.pay-btn:not(:disabled):active {
+  transform: translateY(4px) scale(0.96);
+  box-shadow: 0 1px 4px rgba(200, 169, 110, 0.15);
+  filter: brightness(0.88);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.06s ease;
+}
+
+/* ── "Process first 3 pages" free button ────────────────────────────────── */
+.pay-free-btn {
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.14s ease,
+              color 0.14s ease,
+              background 0.14s ease,
+              box-shadow 0.14s ease;
+}
+.pay-free-btn:hover {
+  transform: translateY(-2px) scale(1.01);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(200, 169, 110, 0.07);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+.pay-free-btn:active {
+  transform: translateY(2px) scale(0.975);
+  box-shadow: none;
+  transition: transform 0.06s ease;
+}
+
+/* ── Success CTA ─────────────────────────────────────────────────────────── */
+.success-cta {
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.14s ease,
+              filter 0.12s ease;
+}
+.success-cta:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 14px 36px rgba(200, 169, 110, 0.5);
+  filter: brightness(1.12);
+}
+.success-cta:active {
+  transform: translateY(3px) scale(0.96);
+  box-shadow: 0 1px 4px rgba(200, 169, 110, 0.15);
+  transition: transform 0.06s ease;
+}
+
+/* ── Signature configure / confirm ──────────────────────────────────────── */
+.sig-configure-btn {
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.14s ease, color 0.14s ease,
+              border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.sig-configure-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 8px 22px rgba(200, 169, 110, 0.4);
+}
+.sig-configure-btn:active {
+  transform: translateY(2px) scale(0.96);
+  transition: transform 0.06s ease;
+}
+
+.sig-confirm-btn {
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.14s ease, filter 0.12s ease;
+}
+.sig-confirm-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(200, 169, 110, 0.4);
+  filter: brightness(1.1);
+}
+.sig-confirm-btn:active {
+  transform: translateY(3px) scale(0.965);
+  transition: transform 0.06s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DROPZONE — dramatic drag-over, heavy bounce on interaction
+══════════════════════════════════════════════════════════════════════════ */
+.dropzone {
+  transition: border-color  0.18s ease,
+              background    0.18s ease,
+              box-shadow    0.18s ease,
+              transform     0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+.dropzone:hover:not(.has-file) {
+  border-color: var(--accent);
+  background: rgba(200, 169, 110, 0.05);
+  box-shadow: 0 0 0 5px rgba(200, 169, 110, 0.1),
+              inset 0 0 28px rgba(200, 169, 110, 0.04);
+  transform: scale(1.008);
+}
+.dropzone:hover:not(.has-file) .dz-icon {
+  transform: translateY(-6px) scale(1.15);
+  color: var(--accent);
+}
+.dropzone:hover:not(.has-file) .dz-title {
+  color: var(--text);
+}
+.dropzone:active:not(.has-file) {
+  transform: scale(0.985);
+  background: rgba(200, 169, 110, 0.09);
+  transition: transform 0.07s ease;
+}
+
+/* Drag-over state — maximum drama */
+.dropzone.drag-over {
+  border-color: var(--accent) !important;
+  background: rgba(200, 169, 110, 0.1) !important;
+  box-shadow:
+    0 0 0 6px rgba(200, 169, 110, 0.18),
+    0 0 0 12px rgba(200, 169, 110, 0.07),
+    inset 0 0 40px rgba(200, 169, 110, 0.06) !important;
+  transform: scale(1.018) !important;
+  transition: all 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.dropzone.drag-over .dz-icon {
+  transform: translateY(-8px) scale(1.22) !important;
+  color: var(--accent) !important;
+}
+.dropzone.drag-over .dz-title {
+  color: var(--accent) !important;
+}
+
+.dz-icon {
+  transition: color 0.18s ease,
+              transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dz-title {
+  transition: color 0.15s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PRESET RADIO CARDS — strong press, bouncy selection
+══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FORMAT RADIO CARDS — same bold treatment
+══════════════════════════════════════════════════════════════════════════ */
+.fmt-opt label {
+  cursor: pointer;
+  transition: border-color  0.14s ease,
+              background    0.14s ease,
+              transform     0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow    0.14s ease;
+  display: block;
+}
+.fmt-opt label:hover {
+  border-color: var(--accent) !important;
+  background: rgba(200, 169, 110, 0.07) !important;
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.3),
+              0 0 0 1px rgba(200, 169, 110, 0.2);
+}
+.fmt-opt label:active {
+  transform: translateY(3px) scale(0.94) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
+  transition: transform 0.07s ease, box-shadow 0.07s ease !important;
+}
+.fmt-opt input:checked + label {
+  box-shadow: 0 0 0 2px var(--accent),
+              0 6px 20px rgba(200, 169, 110, 0.25) !important;
+  transform: translateY(-2px) scale(1.02);
+}
+.fmt-opt input:focus-visible + label {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SELECT DROPDOWNS — chunky border, strong focus
+══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION — respect OS preference
+══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration:  0.01ms !important;
+  }
+}
