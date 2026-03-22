@@ -544,14 +544,20 @@ async function doSubmit({ capPages = null, token = null } = {}) {
     });
   }
 
-  submitBtn.disabled = true;
-  progressWrap.style.display = 'block';
-  statusMsg.textContent = '';
-  progressFill.style.width = '0%';
-  progressPct.textContent = '0%';
-  progressLabel.textContent = 'Processing…';
+ submitBtn.disabled = true;
+progressWrap.style.display = 'block';
+statusMsg.textContent = '';
+progressFill.style.width = '0%';
+progressPct.textContent = '0%';
+progressLabel.textContent = 'Uploading…';
 
-  let fake = 0;
+// Immediate visual response before server replies
+await new Promise(r => setTimeout(r, 30));
+progressFill.style.width = '8%';
+progressPct.textContent = '8%';
+progressLabel.textContent = 'Processing…';
+
+let fake = 8;
   const timer = setInterval(() => {
     fake = Math.min(fake + Math.random() * 8, 85);
     progressFill.style.width = `${fake}%`;
@@ -2708,3 +2714,8 @@ function setButtonLoading(btn, loading, label) {
     setButtonLoading(openBtn, true, 'Loading…');
   }, { capture: true });
 })();
+
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
