@@ -74,7 +74,8 @@ const _origWarn = console.warn.bind(console);
 console.warn = (...args) => {
   const msg = String(args[0] ?? '');
   if (['getPathGenerator','Unable to load font','TT: undefined','TT: invalid',
-       'ignoring character','Requesting object','standardFontDataUrl','_path_']
+       'ignoring character','Requesting object','standardFontDataUrl','_path_',
+       'undefined function']
       .some(s => msg.includes(s))) return;
   _origWarn(...args);
 };
@@ -232,6 +233,88 @@ async function aggressiveCompress(inputBuffer, dpi = 120, quality = 45) {
 
   return Buffer.from(await pdfDoc.save());
 }
+import AdmZip from 'adm-zip';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DOCX / ZIP COMPRESSION
+// ══════════════════════════════════════════════════════════════════════════════
+
+const IMAGE_EXTS = new Set(['.jpg','.jpeg','.png','.gif','.tiff','.tif','.bmp','.webp','.emf','.wmf']);
+
+/**
+ * Compress a DOCX (or any Office Open XML) file by:
+ * 1. Recompressing embedded images with sharp
+ * 2. Repacking the ZIP at max compression
+ */
+async function compressDocx(inputBuffer, quality = 82) {
+  const zip = new AdmZip(inputBuffer);
+  const entries = zip.getEntries();
+  const outZip = new AdmZip();
+
+  for (const entry of entries) {
+    const name = entry.entryName;
+    const data = entry.getData();
+    const ext  = name.slice(name.lastIndexOf('.')).toLowerCase();
+
+    if (!entry.isDirectory && IMAGE_EXTS.has(ext) && data.length > 10_000) {
+      try {
+        let compressed;
+        if (ext === '.png') {
+          // Keep PNG but crush it
+          compressed = await sharp(data).png({ compressionLevel: 9, palette: false }).toBuffer();
+        } else {
+          // Convert everything else to JPEG
+          compressed = await sharp(data).jpeg({ quality, mozjpeg: false }).toBuffer();
+          // Only use if actually smaller
+          if (compressed.length >= data.length) compressed = data;
+        }
+        // Rename .png → .jpeg inside the docx if we converted
+        const newName = (ext === '.png' && compressed !== data)
+          ? name.replace(/\.png$/i, '.jpeg')
+          : name;
+        outZip.addFile(newName, compressed, '', 8); // 8 = DEFLATE
+        continue;
+      } catch { /* if sharp fails, keep original */ }
+    }
+
+    // Non-image entries: just repack with max compression
+    outZip.addFile(name, data, '', entry.isDirectory ? 0 : 8);
+  }
+
+  return Buffer.from(outZip.toBuffer());
+}
+
+/**
+ * Recompress a ZIP at maximum deflate level.
+ * Also recompresses any images found inside.
+ */
+async function compressZip(inputBuffer, quality = 80) {
+  const zip    = new AdmZip(inputBuffer);
+  const outZip = new AdmZip();
+
+  for (const entry of zip.getEntries()) {
+    if (entry.isDirectory) {
+      outZip.addFile(entry.entryName, Buffer.alloc(0), '', 0);
+      continue;
+    }
+    const data = entry.getData();
+    const ext  = entry.entryName.slice(entry.entryName.lastIndexOf('.')).toLowerCase();
+
+    if (IMAGE_EXTS.has(ext) && data.length > 10_000) {
+      try {
+        const compressed = await sharp(data).jpeg({ quality }).toBuffer();
+        if (compressed.length < data.length) {
+          outZip.addFile(entry.entryName, compressed, '', 8);
+          continue;
+        }
+      } catch { /* keep original */ }
+    }
+
+    outZip.addFile(entry.entryName, data, '', 8); // max deflate
+  }
+
+  return Buffer.from(outZip.toBuffer());
+}
 /**
  * Assemble processed page PNG buffers into a PDF with pdf-lib,
  * then compress the assembled PDF with Ghostscript.
@@ -264,6 +347,28 @@ const IMAGE_TYPES = new Set([
   'image/jpeg','image/jpg','image/png','image/webp','image/tiff','image/bmp',
 ]);
 
+// DOCX / Office Open XML mime types
+const DOCX_TYPES = new Set([
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',   // .docx
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',         // .xlsx
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+  'application/msword',       // .doc (legacy — we still try)
+]);
+const ZIP_TYPES = new Set([
+  'application/zip','application/x-zip','application/x-zip-compressed',
+  'application/octet-stream', // some browsers send this for .zip
+]);
+
+const uploadDocOrZip = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_, file, cb) => {
+    const ok = DOCX_TYPES.has(file.mimetype) || ZIP_TYPES.has(file.mimetype)
+      || file.originalname.match(/\.(docx|xlsx|pptx|zip)$/i);
+    ok ? cb(null, true) : cb(new Error('Only DOCX, XLSX, PPTX, and ZIP files supported.'));
+  },
+});
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024, fieldSize: 10 * 1024 * 1024 },
@@ -289,6 +394,13 @@ app.use((req, res, next) => {
 });
 
 app.get('/health', (_, res) => res.json({ status: 'ok', node: process.version }));
+// ── GET /dev-token ─── REMOVE BEFORE PRODUCTION ──────────────────────────────
+app.get('/dev-token', (req, res) => {
+  const ip    = req.headers['x-forwarded-for']?.split(',')[0].trim()
+             ?? req.socket.remoteAddress ?? '127.0.0.1';
+  const token = issueToken(ip);
+  res.json({ token, ip });
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function safeDpi(requestedDpi, pageCount) {
@@ -426,8 +538,133 @@ app.post('/compress-pdf', uploadPdfOnly.single('file'), async (req, res) => {
   }
 });
 
-// ── POST /editor/pages ────────────────────────────────────────────────────────
-// Renders PDF pages to JPEG images for the canvas editor.
+// ── POST /compress-doc ────────────────────────────────────────────────────────
+// Compresses DOCX / XLSX / PPTX / ZIP by recompressing embedded images
+// and repacking with max deflate. No content changes — purely size reduction.
+app.post('/compress-doc', uploadDocOrZip.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+  const origSize = req.file.buffer.length;
+  const origName = safeFilename(req.file.originalname);
+  const ext      = origName.slice(origName.lastIndexOf('.')).toLowerCase();
+  const baseName = origName.replace(/\.[^.]+$/, '');
+  const outName  = `${baseName}_compressed${ext}`;
+  const quality  = parseInt(req.body.quality ?? 80);
+  const isZip    = ext === '.zip';
+
+  console.log(`🗜  compress-doc | ${origName} | ${(origSize/1024).toFixed(0)}KB | ${isZip ? 'zip' : 'office'}`);
+
+  try {
+    const compressed = isZip
+      ? await compressZip(req.file.buffer, quality)
+      : await compressDocx(req.file.buffer, quality);
+
+    const newSize  = compressed.length;
+    const savedPct = Math.max(0, Math.round((1 - newSize / origSize) * 100));
+    console.log(`✓  compress-doc | ${(origSize/1024).toFixed(0)}KB → ${(newSize/1024).toFixed(0)}KB | saved ${savedPct}%`);
+
+    const mimeMap = {
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.zip':  'application/zip',
+    };
+
+    res.set({
+      'Content-Type':        mimeMap[ext] ?? 'application/octet-stream',
+      'Content-Disposition': contentDisposition(outName),
+      'X-Original-Size':     origSize,
+      'X-Compressed-Size':   newSize,
+      'X-Saved-Percent':     savedPct,
+    });
+    res.send(compressed);
+  } catch (err) {
+    console.error('✗ compress-doc:', err.message);
+    if (!res.headersSent) res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /compress-image ──────────────────────────────────────────────────────
+// Compresses JPG, PNG, WEBP images using sharp.
+// Supports quality control, format conversion, and max-dimension resize.
+// Nothing stored — processed entirely in memory.
+const uploadImageOnly = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_, file, cb) => {
+    const ok = ['image/jpeg','image/jpg','image/png','image/webp'].includes(file.mimetype)
+      || file.originalname.match(/\.(jpg|jpeg|png|webp)$/i);
+    ok ? cb(null, true) : cb(new Error('Only JPG, PNG, and WEBP supported.'));
+  },
+});
+
+app.post('/compress-image', uploadImageOnly.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+  const origSize  = req.file.buffer.length;
+  const origName  = safeFilename(req.file.originalname);
+  const baseName  = origName.replace(/\.[^.]+$/, '');
+  const quality   = Math.max(10, Math.min(100, parseInt(req.body.quality  ?? 82)));
+  const maxWidth  = req.body.maxWidth  ? parseInt(req.body.maxWidth)  : null;
+  const maxHeight = req.body.maxHeight ? parseInt(req.body.maxHeight) : null;
+  const format    = req.body.format ?? 'auto'; // auto | jpeg | png | webp
+
+  console.log(`🖼  compress-image | ${origName} | ${(origSize/1024).toFixed(0)}KB | q:${quality} fmt:${format}`);
+
+  try {
+    const meta = await sharp(req.file.buffer).metadata();
+    let pipeline = sharp(req.file.buffer);
+
+    // Resize if maxWidth/maxHeight requested
+    if (maxWidth || maxHeight) {
+      pipeline = pipeline.resize(maxWidth ?? null, maxHeight ?? null, {
+        fit: 'inside', withoutEnlargement: true,
+      });
+    }
+
+    // Determine output format
+    let outExt, outMime;
+    const inputFormat = meta.format; // jpeg, png, webp, etc.
+    const targetFormat = format === 'auto' ? inputFormat : format;
+
+    if (targetFormat === 'png') {
+      pipeline = pipeline.png({ compressionLevel: 9, palette: true, quality });
+      outExt = 'png'; outMime = 'image/png';
+    } else if (targetFormat === 'webp') {
+      pipeline = pipeline.webp({ quality, effort: 6 });
+      outExt = 'webp'; outMime = 'image/webp';
+    } else {
+      // Default to JPEG (best compression for photos)
+      pipeline = pipeline.jpeg({ quality, mozjpeg: false, chromaSubsampling: '4:2:0' });
+      outExt = 'jpg'; outMime = 'image/jpeg';
+    }
+
+    const compressed = await pipeline.toBuffer();
+    const compMeta   = await sharp(compressed).metadata();
+
+    // Only use compressed version if it's actually smaller
+    const final    = compressed.length < origSize ? compressed : req.file.buffer;
+    const newSize  = final.length;
+    const savedPct = Math.max(0, Math.round((1 - newSize / origSize) * 100));
+
+    console.log(`✓  compress-image | ${(origSize/1024).toFixed(0)}KB → ${(newSize/1024).toFixed(0)}KB | saved ${savedPct}% | ${compMeta.width}×${compMeta.height}`);
+
+    const outName = `${baseName}_compressed.${outExt}`;
+    res.set({
+      'Content-Type':        outMime,
+      'Content-Disposition': contentDisposition(outName),
+      'X-Original-Size':     origSize,
+      'X-Compressed-Size':   newSize,
+      'X-Saved-Percent':     savedPct,
+      'X-Width':             compMeta.width,
+      'X-Height':            compMeta.height,
+    });
+    res.send(final);
+  } catch (err) {
+    console.error('✗ compress-image:', err.message);
+    if (!res.headersSent) res.status(500).json({ error: err.message });
+  }
+});
 // Returns: { pages: string[], count: number }  (base64 JPEG per page)
 app.post('/editor/pages', upload.fields([{ name: 'file', maxCount: 1 }]), async (req, res) => {
   const file = req.files?.file?.[0];

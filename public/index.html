@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ScanDrift — PDF Scanner, Compressor &amp; Editor Online</title>
+    <title>ScanDrift — PDF Scanner, File Compressor &amp; Editor Online</title>
     <meta
       name="description"
-      content="ScanDrift is a complete PDF toolkit: apply physics-based scanner effects, compress PDFs by up to 60%, and edit documents with whiteout, annotation, and signature tools. Runs entirely on your machine — nothing uploaded, no signup."
+      content="ScanDrift is a complete file toolkit: physics-based PDF scanner effects, compress any file up to 60% smaller (PDF, images, Word, ZIP), and edit PDFs with whiteout, annotation, and signature tools. Nothing uploaded, no signup."
     />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://ScanDrift.com/" />
@@ -18,7 +18,7 @@
     />
     <meta
       name="keywords"
-      content="PDF scanner effect, compress PDF online, PDF editor online, reduce PDF size, scanner simulation, make document look scanned, PDF compressor, whiteout PDF, annotate PDF, add signature to PDF, PDF toolkit, channel misregistration, moiré effect, redact PDF"
+      content="PDF scanner effect, compress PDF online, compress image online free, reduce PDF size, compress Word document, compress DOCX online, PDF compressor, scanner simulation, make document look scanned, PDF editor online, whiteout PDF, annotate PDF, add signature to PDF, compress file online, channel misregistration, moiré effect, redact PDF"
     />
     <script type="application/ld+json">
     {
@@ -26,11 +26,14 @@
       "@type": "WebApplication",
       "name": "ScanDrift",
       "url": "https://ScanDrift.com/",
-      "description": "A complete PDF toolkit: physics-based scanner simulation, server-side PDF compression, and a full canvas PDF editor with annotation and signature tools. Runs entirely locally — no uploads, no account.",
+      "description": "A complete file toolkit: physics-based PDF scanner simulation, file compression for PDFs, images, Word documents and ZIPs, and a full canvas PDF editor. Runs entirely locally — no uploads, no account.",
       "applicationCategory": "UtilitiesApplication",
       "featureList": [
         "PDF scanner effect simulation",
         "PDF compression up to 60%",
+        "Image compression — JPG PNG WEBP",
+        "Word and Office document compression",
+        "ZIP file recompression",
         "PDF canvas editor",
         "Whiteout and blackout redaction",
         "PDF annotation tools",
@@ -86,7 +89,7 @@
     <div class="site-wrap">
 
       <!-- ══════════════ NAV ══════════════ -->
-      <nav class="site-nav" role="navigation" aria-label="Main navigation">
+       <nav class="site-nav" role="navigation" aria-label="Main navigation">
         <a class="nav-brand" href="/" aria-label="ScanDrift home">
           <div class="nav-icon" aria-hidden="true">
             <svg viewBox="0 0 16 16">
@@ -122,7 +125,7 @@
         <div class="hero-left">
           <p class="hero-eyebrow">
             <span class="live-dot" aria-hidden="true"></span>
-            Scan · Compress · Edit — One Toolkit
+            Scan · Compress Any File · Edit — One Toolkit
           </p>
 
           <h1 class="hero-h1">
@@ -146,7 +149,7 @@
             <span class="pill hi">Compressor</span>
             <span class="pill hi">Editor</span>
             <span class="pill hi">Signature</span>
-            <span class="pill">PDF · JPG · PNG · WEBP</span>
+            <span class="pill">PDF · JPG · PNG · WEBP · DOCX · ZIP</span>
             <span class="pill">No signup · No cloud</span>
           </div>
 
@@ -262,7 +265,7 @@
 
         <!-- Right: App Card + Scanner Scene -->
         <div class="hero-right">
-         <div class="scanner-scene" aria-hidden="true">
+          <div class="scanner-scene" aria-hidden="true">
       <div class="particle-wrap" id="particleWrap"></div>
       <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -617,8 +620,8 @@
       <section class="tools-showcase" id="tools" aria-label="ScanDrift tools">
         <div class="section-hd">
           <span class="section-tag">What We Do</span>
-          <h2 class="section-h2">Everything your PDF needs</h2>
-          <p class="section-sub">Three independent tools. Use one or all three. Everything runs locally — your files never leave your machine.</p>
+          <h2 class="section-h2">Everything your files need</h2>
+          <p class="section-sub">Three independent tools. Use one or all three. Runs locally — your files never leave your machine. Compressor and Editor always free.</p>
         </div>
         <div class="tools-showcase-grid">
 
@@ -647,20 +650,20 @@
             <div class="tsc-header">
               <div class="tsc-icon">🗜</div>
               <div>
-                <h3 class="tsc-title">PDF Compressor</h3>
+                <h3 class="tsc-title">File Compressor</h3>
                 <span class="tsc-badge always-free">Always free · No limits</span>
               </div>
             </div>
-            <p class="tsc-desc">Professional-grade compression that understands PDF structure. Preserves vector text and fonts — only recompresses embedded images.</p>
+            <p class="tsc-desc">Compress any file — PDF, image, Word document, or ZIP — up to 60% smaller. PDF compression preserves vector text and fonts. Images recompressed with quality control. All free, no limits.</p>
             <ul class="tsc-features">
-              <li>Up to 60% file size reduction</li>
-              <li>Preserves selectable text and fonts</li>
-              <li>High, Medium, and Small File presets</li>
-              <li>Smart rasterization for maximum shrink</li>
+              <li>PDF — preserves text, fonts, and structure</li>
+              <li>Images — JPG, PNG, WEBP with quality control</li>
+              <li>Word, Excel, PowerPoint — DOCX, XLSX, PPTX</li>
+              <li>ZIP — repack at maximum compression</li>
+              <li>Up to 60% size reduction</li>
               <li>Before/after size comparison</li>
-              <li>Any PDF up to 50 MB</li>
             </ul>
-            <a href="#compress" class="tsc-cta">Compress a PDF →</a>
+            <a href="#compress" class="tsc-cta">Compress a file →</a>
           </div>
 
           <div class="tool-showcase-card">
@@ -827,10 +830,10 @@
               <p class="feature-desc">Everything runs on your machine locally. Files are never uploaded, never stored. Close the tab and nothing remains.</p>
             </article>
           </div>
-           <section class="section" id="how-it-works">
-        <div class="section-hd">
+             <section class="section" id="how-it-works" >
+        <div class="section-hd" style="margin-top: -50px;">
           <span class="section-tag">Process</span>
-          <h3 class="section-h2">How the scanner works</h3>
+          <h4 class="section-h2">How the scanner works</h4>
         </div>
         <div class="steps-grid">
           <div class="step">
@@ -894,8 +897,8 @@
           <div class="feature-group-header">
             <span class="feature-group-icon">🗜</span>
             <div>
-              <h3 class="feature-group-title">PDF Compressor</h3>
-              <p class="feature-group-sub">Professional-grade — structure-aware, not destructive</p>
+              <h3 class="feature-group-title">File Compressor</h3>
+              <p class="feature-group-sub">PDF, images, Word docs, ZIP — all in one tool</p>
             </div>
             <span class="feature-group-badge free-badge">Always free · No limits</span>
           </div>
@@ -913,8 +916,8 @@
                   <text x="36" y="55" font-family="IBM Plex Mono" font-size="4.5" fill="var(--accent)" text-anchor="middle" opacity=".65" letter-spacing=".5">GHOSTSCRIPT</text>
                 </svg>
               </div>
-              <h4 class="feature-title">Structure-Aware Compression</h4>
-              <p class="feature-desc">Our compression engine understands the PDF object model. It recompresses embedded images while leaving vector paths, fonts, and text streams completely untouched — output is still selectable and searchable.</p>
+              <h4 class="feature-title">PDF — Structure-Aware Compression</h4>
+              <p class="feature-desc">Our compression engine understands the PDF object model — recompresses embedded images while leaving vector paths, fonts, and text streams untouched. Output stays selectable and searchable. Also handles DOCX, XLSX, PPTX by recompressing their embedded images, and repacks ZIPs at maximum deflate.</p>
             </article>
             <article class="feature-cell">
               <div class="feat-illo" aria-hidden="true">
@@ -932,8 +935,8 @@
                   <text x="62" y="51" font-family="IBM Plex Mono" font-size="5" fill="var(--accent)" opacity=".8" text-anchor="end">RASTER</text>
                 </svg>
               </div>
-              <h4 class="feature-title">Smart Three-Preset System</h4>
-              <p class="feature-desc">High Quality (150 DPI, image recompression only), Medium (100 DPI bicubic downsample), and Small File (smart rasterization that only activates when it produces a smaller output than GS alone).</p>
+              <h4 class="feature-title">Quality Controls Per File Type</h4>
+              <p class="feature-desc">PDFs: High Quality (150 DPI), Medium (100 DPI bicubic), and Small File (smart rasterization). Images: quality slider from 20–100% with format conversion to JPEG, PNG, or WEBP. Office files and ZIPs: max DEFLATE repack with embedded image recompression.</p>
             </article>
           </div>
         </div>
@@ -991,32 +994,33 @@
         </div>
 
       </section>
+       
       
 
       <!-- ══════════════ COMPRESS PDF ══════════════ -->
       <section class="compress-section" id="compress" aria-label="PDF Compression">
         <div class="compress-inner">
           <div class="compress-hd">
-            <span class="section-tag">Free Tool</span>
-            <h2 class="section-h2">Compress your PDF</h2>
-            <p class="compress-sub">Professional-grade compression — preserves vector text and fonts, only recompresses embedded images. Up to 60% smaller with no visible quality loss on the High setting. Small File mode uses smart rasterization for maximum shrink on any PDF type.</p>
+            <span class="section-tag">Free Tool · PDF · Images · Docs · ZIP</span>
+            <h2 class="section-h2">Compress any file</h2>
+            <p class="compress-sub">Compress anything — PDFs preserve vector text and fonts (up to 60% smaller), images with quality control, Word and Office documents, and ZIP files. All free, no page limits, nothing uploaded.</p>
           </div>
           <div class="compress-card app-card">
             <div class="card-topbar" aria-hidden="true">
               <div class="card-dots"><div class="card-dot"></div><div class="card-dot"></div><div class="card-dot"></div></div>
-              <span class="card-title">ScanDrift // compressor</span>
+              <span class="card-title">ScanDrift // file compressor</span>
               <span></span>
             </div>
             <div class="card-body">
-              <div class="dropzone" id="cmpDropzone" role="button" tabindex="0" aria-label="Upload PDF to compress">
-                <input type="file" id="cmpInput" accept=".pdf" aria-label="Choose PDF file" />
+              <div class="dropzone" id="cmpDropzone" role="button" tabindex="0" aria-label="Upload file to compress">
+                <input type="file" id="cmpInput" accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx,.pptx,.zip" aria-label="Choose file" />
                 <div class="dz-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" /><polyline points="16 12 12 8 8 12" /><line x1="12" y1="8" x2="12" y2="20" />
                   </svg>
                 </div>
-                <p class="dz-title">Drop your PDF here</p>
-                <p class="dz-types">PDF only · Max 50 MB</p>
+                <p class="dz-title">Drop any file here</p>
+                <p class="dz-types">PDF · JPG · PNG · WEBP · DOCX · XLSX · PPTX · ZIP · Max 50 MB</p>
               </div>
               <div class="file-bar" id="cmpFileBar" role="status" aria-live="polite">
                 <span class="file-type-badge">PDF</span>
@@ -1024,7 +1028,7 @@
                 <span class="file-sz" id="cmpFileSize"></span>
                 <button type="button" class="clear-btn" id="cmpClearBtn" aria-label="Remove file">✕</button>
               </div>
-              <label class="field-label" id="cmp-preset-lbl">Compression Level</label>
+              <label class="field-label" id="cmp-preset-lbl">Compression Level <span class="field-hint" id="cmpPresetHint">· PDF mode</span></label>
               <div class="preset-row" role="radiogroup" aria-labelledby="cmp-preset-lbl">
                 <div class="preset-opt"><input type="radio" name="cmpPreset" id="cmp-high" value="high" checked /><label for="cmp-high"><span class="p-name">High Quality</span><span class="p-desc">150 DPI · Good balance</span></label></div>
                 <div class="preset-opt"><input type="radio" name="cmpPreset" id="cmp-medium" value="medium" /><label for="cmp-medium"><span class="p-name">Medium</span><span class="p-desc">100 DPI · Smaller file</span></label></div>
@@ -1032,7 +1036,7 @@
               </div>
               <button type="button" class="submit-btn" id="cmpSubmitBtn" disabled>
                 <div class="btn-spinner"></div>
-                <span class="btn-label">Compress PDF</span>
+                <span class="btn-label">Compress File</span>
               </button>
               <div class="progress-wrap" id="cmpProgressWrap" role="status" aria-live="polite" style="display:none">
                 <div class="progress-top">
@@ -1109,6 +1113,10 @@
         </div>
       </section>
 
+
+      <!-- ══════════════ IMAGE COMPRESSOR ══════════════ -->
+    
+
       <!-- ══════════════ FAQ ══════════════ -->
       <section class="section" id="faq">
         <div class="section-hd">
@@ -1119,12 +1127,12 @@
           <div>
             <dl>
               <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">What file types are supported?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">PDF (any page count), JPG, PNG, WEBP, TIFF, and BMP. Images can be returned as their original format or wrapped in a PDF. The compressor and editor accept PDF only.</span></dd>
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">What file types does ScanDrift support?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Scanner: PDF, JPG, PNG, WEBP, TIFF, BMP. Compressor: PDF, JPG, PNG, WEBP, DOCX, XLSX, PPTX, and ZIP. Editor: PDF, JPG, PNG, WEBP. Maximum file size is 50 MB across all tools.</span></dd>
               </div>
               <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                 <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Is ScanDrift completely free?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">The PDF Compressor and PDF Editor are always free with no page limits and no watermarks. The Scanner gives you the first 3 pages of any document for free. Beyond 3 pages requires a one-time $5 unlock, valid for 10 hours. No subscriptions, no recurring charges.</span></dd>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">The File Compressor and PDF Editor are always free with no page limits and no watermarks. The Scanner gives you the first 3 pages of any document for free. Beyond 3 pages requires a one-time $5 unlock, valid for 10 hours. No subscriptions, no recurring charges.</span></dd>
               </div>
               <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                 <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Are my files sent to any server?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
@@ -1144,7 +1152,7 @@
             <dl>
               <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                 <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Is the PDF compressor really free?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes — the compressor has no page limit and no payment required. Upload any PDF up to 50 MB and download the compressed version instantly. The $5 unlock only applies to the scanner tool when processing more than 3 pages.</span></dd>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes — the compressor is completely free with no limits. It supports PDF, images (JPG, PNG, WEBP), Word and Office documents (DOCX, XLSX, PPTX), and ZIP files. Upload any file up to 50 MB and download the compressed version instantly. The $5 unlock only applies to the scanner tool when processing more than 3 pages.</span></dd>
               </div>
               <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                 <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Is the PDF editor free to use?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
@@ -1173,12 +1181,13 @@
           <div class="footer-logo" aria-hidden="true">
             <svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="1.5" /><rect x="2" y="5.5" width="8" height="1.5" /><rect x="2" y="9" width="10" height="1.5" /><rect x="2" y="12.5" width="6" height="1.5" /></svg>
           </div>
-          <p class="footer-copy">© 2026 ScanDrift · PDF Scanner · Compressor · Editor · No cloud · No signup</p>
+          <p class="footer-copy">© 2026 ScanDrift · PDF Scanner · File Compressor · Editor · No cloud · No signup</p>
         </div>
         <nav class="footer-right" aria-label="Footer navigation">
           <a href="#tools">Tools</a>
           <a href="#how-it-works">How it works</a>
           <a href="#compress">Compress</a>
+          <a href="#image-compress">Images</a>
           <a href="#editor">Edit</a>
           <a href="#faq">FAQ</a>
         </nav>

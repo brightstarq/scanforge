@@ -1,209 +1,268 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ScanDrift — Free PDF & Image Scanner Effect | Make Documents Look Scanned</title>
-<meta name="description" content="Apply realistic scanner effects to any PDF or image. Grain, warmth, vignette, deskew. Free, private, no signup. Files never leave your machine.">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://ScanDrift.com/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="ScanDrift — Free PDF & Image Scanner Effect">
-<meta property="og:description" content="Make any PDF or image look physically scanned. Free, private, no signup.">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ScanDrift","url":"https://ScanDrift.com/","description":"Free PDF & image scanner effect tool","applicationCategory":"UtilitiesApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
-<script>(function(){var t=localStorage.getItem('ScanDrift-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,700;1,9..144,900&family=IBM+Plex+Mono:wght@300;400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScanDrift — PDF Scanner, Compressor &amp; Editor Online</title>
+    <meta
+      name="description"
+      content="ScanDrift is a complete PDF toolkit: apply physics-based scanner effects, compress PDFs by up to 60%, and edit documents with whiteout, annotation, and signature tools. Runs entirely on your machine — nothing uploaded, no signup."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://ScanDrift.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ScanDrift — PDF Scanner, Compressor &amp; Editor" />
+    <meta
+      property="og:description"
+      content="Three professional PDF tools in one: physics-based scan effects, server-side PDF compression (up to 60%), and a full canvas editor with signature support. Compress and Edit always free. Scanner: 3 pages free, $5 unlimited."
+    />
+    <meta
+      name="keywords"
+      content="PDF scanner effect, compress PDF online, PDF editor online, reduce PDF size, scanner simulation, make document look scanned, PDF compressor, whiteout PDF, annotate PDF, add signature to PDF, PDF toolkit, channel misregistration, moiré effect, redact PDF"
+    />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "ScanDrift",
+      "url": "https://ScanDrift.com/",
+      "description": "A complete PDF toolkit: physics-based scanner simulation, server-side PDF compression, and a full canvas PDF editor with annotation and signature tools. Runs entirely locally — no uploads, no account.",
+      "applicationCategory": "UtilitiesApplication",
+      "featureList": [
+        "PDF scanner effect simulation",
+        "PDF compression up to 60%",
+        "PDF canvas editor",
+        "Whiteout and blackout redaction",
+        "PDF annotation tools",
+        "Signature placement",
+        "Channel misregistration simulation",
+        "Moiré interference patterns",
+        "Paper show-through / back-bleed",
+        "Focus gradient depth-of-field",
+        "Motion smear simulation",
+        "14+ scan effect layers",
+        "Engine Compression",
+        "No file uploads"
+      ],
+      "offers": [
+        {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Scanner — up to 3 pages free. Compress and Edit tools always free."
+        },
+        {
+          "@type": "Offer",
+          "price": "5",
+          "priceCurrency": "USD",
+          "description": "Unlimited scanner pages — one-time unlock, valid 10 hours"
+        }
+      ]
+    }
+    </script>
+    <script>
+      (function () {
+        var t = localStorage.getItem("scandrift-theme") || "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,700;1,9..144,900&family=IBM+Plex+Mono:wght@300;400;500;600&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="interactions.css" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <meta name="theme-color" content="#0E0B08" />
+  </head>
+  <body>
+    <div class="scan-beam" aria-hidden="true"></div>
+    <div class="site-wrap">
 
-<div class="scan-beam" aria-hidden="true"></div>
-<div class="site-wrap">
-
-<!-- ══════════════ NAV ══════════════ -->
-<nav class="site-nav" role="navigation" aria-label="Main navigation">
-  <a class="nav-brand" href="/" aria-label="ScanDrift home">
-    
-    <div class="nav-icon" aria-hidden="true">
-      <svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="1.5"/><rect x="2" y="5.5" width="8" height="1.5"/><rect x="2" y="9" width="10" height="1.5"/><rect x="2" y="12.5" width="6" height="1.5"/></svg>
-    </div>
-    <span class="nav-wordmark">ScanDrift</span>
-    <span class="nav-badge">Free</span>
-  </a>
-  <div class="nav-left">
-    <ul class="nav-links" role="list">
-      <li><a href="#how-it-works">How it works</a></li>
-      <li><a href="#features">Features</a></li>
-      <li><a href="#faq">FAQ</a></li>
-    </ul>
-  </div>
-  <div class="nav-right">
-    <button class="theme-toggle" id="themeToggle" aria-label="Switch to light mode">
-      <span class="theme-icon">☀️</span>
-      <span class="theme-txt">Light</span>
-    </button>
-  </div>
-</nav>
-
-<!-- ══════════════ HERO ══════════════ -->
-<section class="hero" aria-label="ScanDrift PDF & image scanner tool">
-
-  <!-- Left: headline + before/after -->
-  <div class="hero-left">
-    <p class="hero-eyebrow"><span class="live-dot" aria-hidden="true"></span>PDF &amp; Image Scanner</p>
-
-    <h1 class="hero-h1">Give any file<br>the <span class="hl">scanned look</span></h1>
-
-    <p class="hero-desc">Grain, warmth, vignette, deskew — studio-quality scanner effects applied locally on your machine. Nothing uploaded. Nothing stored. Always free.</p>
-
-    <div class="hero-pills">
-      <span class="pill hi">PDF</span><span class="pill hi">JPG</span>
-      <span class="pill hi">PNG</span><span class="pill hi">WEBP</span>
-      <span class="pill">TIFF</span><span class="pill">BMP</span>
-      <span class="pill">No App</span><span class="pill">No signup</span>
-    </div>
-
-    <!-- ── Interactive Before / After Drag Slider ── -->
-    <div class="ba-container" id="baContainer" role="img" aria-label="Before and after document comparison. Drag to compare.">
-      <div class="ba-label-strip" aria-hidden="true">
-        <span>Before — Clean</span>
-        <span class="ba-label-after">After — Scanned ✓</span>
-      </div>
-
-      <!-- BEFORE: clean digital document SVG -->
-      <div class="ba-before" aria-hidden="true">
-        <svg class="ba-doc-svg" viewBox="0 0 300 390" xmlns="http://www.w3.org/2000/svg">
-          <rect width="300" height="390" fill="#F5F0E8"/>
-          <!-- Logo / letterhead area -->
-          <rect x="20" y="22" width="50" height="50" rx="4" fill="#E8E0D0"/>
-          <rect x="80" y="28" width="110" height="8" rx="2" fill="#1A1612" opacity=".7"/>
-          <rect x="80" y="42" width="80" height="5" rx="1.5" fill="#1A1612" opacity=".4"/>
-          <rect x="80" y="53" width="95" height="5" rx="1.5" fill="#1A1612" opacity=".35"/>
-          <!-- Divider -->
-          <line x1="20" y1="88" x2="280" y2="88" stroke="#1A1612" stroke-width="1" opacity=".15"/>
-          <!-- Title -->
-          <rect x="20" y="104" width="200" height="12" rx="2" fill="#1A1612" opacity=".72"/>
-          <!-- Body text paragraphs -->
-          <rect x="20" y="130" width="260" height="5" rx="1.5" fill="#1A1612" opacity=".22"/>
-          <rect x="20" y="140" width="240" height="5" rx="1.5" fill="#1A1612" opacity=".18"/>
-          <rect x="20" y="150" width="255" height="5" rx="1.5" fill="#1A1612" opacity=".20"/>
-          <rect x="20" y="160" width="180" height="5" rx="1.5" fill="#1A1612" opacity=".16"/>
-          <!-- Image / figure block -->
-          <rect x="20" y="176" width="100" height="75" rx="3" fill="#E2DBCE"/>
-          <rect x="25" y="181" width="90" height="65" rx="2" fill="#D8D0C2"/>
-          <!-- Lines beside image -->
-          <rect x="132" y="180" width="148" height="5" rx="1.5" fill="#1A1612" opacity=".20"/>
-          <rect x="132" y="191" width="130" height="5" rx="1.5" fill="#1A1612" opacity=".17"/>
-          <rect x="132" y="202" width="140" height="5" rx="1.5" fill="#1A1612" opacity=".18"/>
-          <rect x="132" y="213" width="110" height="5" rx="1.5" fill="#1A1612" opacity=".15"/>
-          <rect x="132" y="224" width="136" height="5" rx="1.5" fill="#1A1612" opacity=".17"/>
-          <rect x="132" y="235" width="90" height="5" rx="1.5" fill="#1A1612" opacity=".14"/>
-          <!-- More body -->
-          <rect x="20" y="264" width="260" height="5" rx="1.5" fill="#1A1612" opacity=".20"/>
-          <rect x="20" y="274" width="248" height="5" rx="1.5" fill="#1A1612" opacity=".17"/>
-          <rect x="20" y="284" width="255" height="5" rx="1.5" fill="#1A1612" opacity=".19"/>
-          <rect x="20" y="294" width="200" height="5" rx="1.5" fill="#1A1612" opacity=".15"/>
-          <!-- Signature line -->
-          <line x1="20" y1="328" x2="120" y2="328" stroke="#1A1612" stroke-width="1" opacity=".2"/>
-          <rect x="20" y="334" width="60" height="4" rx="1" fill="#1A1612" opacity=".25"/>
-          <rect x="20" y="342" width="80" height="3" rx="1" fill="#1A1612" opacity=".15"/>
-          <!-- Page number -->
-          <rect x="130" y="372" width="40" height="4" rx="1" fill="#1A1612" opacity=".15"/>
-        </svg>
-      </div>
-
-      <!-- AFTER: scanned version with grain+tilt+warmth filter -->
-      <div class="ba-after" id="baAfter" aria-hidden="true">
-        <svg class="ba-doc-svg" viewBox="0 0 300 390" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <!-- Grain filter -->
-            <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.78" numOctaves="4" stitchTiles="stitch" result="noise"/>
-              <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
-              <feBlend in="SourceGraphic" in2="gray" mode="multiply" result="blended"/>
-              <feComponentTransfer in="blended">
-                <feFuncR type="linear" slope="1.06" intercept="-0.025"/>
-                <feFuncG type="linear" slope="1.02" intercept="0.008"/>
-                <feFuncB type="linear" slope="0.94" intercept="0.015"/>
-              </feComponentTransfer>
-            </filter>
-            <!-- Vignette gradient -->
-            <radialGradient id="vig" cx="50%" cy="50%" r="75%">
-              <stop offset="50%" stop-color="transparent"/>
-              <stop offset="100%" stop-color="rgba(0,0,0,0.25)"/>
-            </radialGradient>
-            <!-- Binding shadow gradient -->
-            <linearGradient id="bind" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%"  stop-color="rgba(0,0,0,0.18)"/>
-              <stop offset="6%"  stop-color="rgba(0,0,0,0.08)"/>
-              <stop offset="12%" stop-color="transparent"/>
-            </linearGradient>
-          </defs>
-          <!-- Slight rotation simulating scan misalignment -->
-          <g transform="rotate(-0.7 150 195)" filter="url(#grain)">
-            <rect width="300" height="390" fill="#EDE5D4"/>
-            <!-- Warm tint -->
-            <rect width="300" height="390" fill="rgba(160,110,40,0.055)"/>
-            <!-- Document content — same layout, scanned feel -->
-            <rect x="20" y="22" width="50" height="50" rx="4" fill="#DDD5C0"/>
-            <rect x="80" y="28" width="110" height="8" rx="2" fill="#18130E" opacity=".68"/>
-            <rect x="80" y="42" width="80" height="5" rx="1.5" fill="#18130E" opacity=".38"/>
-            <rect x="80" y="53" width="95" height="5" rx="1.5" fill="#18130E" opacity=".32"/>
-            <line x1="20" y1="88" x2="280" y2="88" stroke="#18130E" stroke-width="1" opacity=".14"/>
-            <rect x="20" y="104" width="200" height="12" rx="2" fill="#18130E" opacity=".68"/>
-            <rect x="20" y="130" width="260" height="5" rx="1.5" fill="#18130E" opacity=".24"/>
-            <rect x="20" y="140" width="240" height="5" rx="1.5" fill="#18130E" opacity=".20"/>
-            <rect x="20" y="150" width="255" height="5" rx="1.5" fill="#18130E" opacity=".22"/>
-            <rect x="20" y="160" width="180" height="5" rx="1.5" fill="#18130E" opacity=".18"/>
-            <rect x="20" y="176" width="100" height="75" rx="3" fill="#D8CFC0"/>
-            <rect x="25" y="181" width="90" height="65" rx="2" fill="#CCC4B4"/>
-            <rect x="132" y="180" width="148" height="5" rx="1.5" fill="#18130E" opacity=".22"/>
-            <rect x="132" y="191" width="130" height="5" rx="1.5" fill="#18130E" opacity=".19"/>
-            <rect x="132" y="202" width="140" height="5" rx="1.5" fill="#18130E" opacity=".20"/>
-            <rect x="132" y="213" width="110" height="5" rx="1.5" fill="#18130E" opacity=".17"/>
-            <rect x="132" y="224" width="136" height="5" rx="1.5" fill="#18130E" opacity=".19"/>
-            <rect x="132" y="235" width="90" height="5" rx="1.5" fill="#18130E" opacity=".16"/>
-            <rect x="20" y="264" width="260" height="5" rx="1.5" fill="#18130E" opacity=".22"/>
-            <rect x="20" y="274" width="248" height="5" rx="1.5" fill="#18130E" opacity=".19"/>
-            <rect x="20" y="284" width="255" height="5" rx="1.5" fill="#18130E" opacity=".21"/>
-            <rect x="20" y="294" width="200" height="5" rx="1.5" fill="#18130E" opacity=".17"/>
-            <line x1="20" y1="328" x2="120" y2="328" stroke="#18130E" stroke-width="1" opacity=".18"/>
-            <rect x="20" y="334" width="60" height="4" rx="1" fill="#18130E" opacity=".22"/>
-            <rect x="20" y="342" width="80" height="3" rx="1" fill="#18130E" opacity=".14"/>
-            <rect x="130" y="372" width="40" height="4" rx="1" fill="#18130E" opacity=".14"/>
-            <!-- Vignette overlay -->
-            <rect width="300" height="390" fill="url(#vig)"/>
-            <!-- Binding shadow -->
-            <rect width="300" height="390" fill="url(#bind)"/>
-          </g>
-        </svg>
-      </div>
-
-      <!-- Divider + handle -->
-      <div class="ba-divider" id="baDivider" aria-hidden="true">
-        <div class="ba-handle" id="baHandle">
-          <svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 2L1 7l3 5M10 2l3 5-3 5" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <!-- ══════════════ NAV ══════════════ -->
+      <nav class="site-nav" role="navigation" aria-label="Main navigation">
+        <a class="nav-brand" href="/" aria-label="ScanDrift home">
+          <div class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+              <rect x="2" y="2" width="12" height="1.5" />
+              <rect x="2" y="5.5" width="8" height="1.5" />
+              <rect x="2" y="9" width="10" height="1.5" />
+              <rect x="2" y="12.5" width="6" height="1.5" />
+            </svg>
+          </div>
+          <span class="nav-wordmark">ScanDrift</span>
+          <span class="nav-badge">Scan · Compress · Edit</span>
+        </a>
+        <div class="nav-left">
+          <ul class="nav-links" role="list">
+            <li><a href="#tools">Tools</a></li>
+            <li><a href="#how-it-works">How it works</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#compress">Compress</a></li>
+            <li><a href="#editor">Edit</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
         </div>
-      </div>
+        <div class="nav-right">
+          <button class="theme-toggle" id="themeToggle" aria-label="Switch to light mode">
+            <span class="theme-icon">☀️</span>
+            <span class="theme-txt">Light</span>
+          </button>
+        </div>
+      </nav>
 
-      <p class="ba-hint" aria-hidden="true">← Drag to compare →</p>
-    </div>
-  </div>
+      <!-- ══════════════ HERO ══════════════ -->
+      <section class="hero" aria-label="ScanDrift PDF toolkit">
+        <div class="hero-left">
+          <p class="hero-eyebrow">
+            <span class="live-dot" aria-hidden="true"></span>
+            Scan · Compress · Edit — One Toolkit
+          </p>
 
-  <!-- Right: scanner + app card -->
-  <div class="hero-right">
+          <h1 class="hero-h1">
+            Three powerful tools<br /><span class="hl">for your PDFs</span>
+          </h1>
 
-    <!-- ══ SCANNER ILLUSTRATION ══ -->
-    <div class="scanner-scene" aria-hidden="true">
+          <p class="hero-desc">
+            <strong>Scan</strong> — physics-based scanner simulation with 14+
+            effect layers: channel misregistration, moiré, grain, focus
+            falloff, and more. <strong>Compress</strong> — Server-side engine
+            PDF reduction, up to 60% smaller while preserving text and fonts.
+            <strong>Edit</strong> — full canvas editor: whiteout, annotate,
+            stamp, draw, and place signatures. Everything runs on your machine.
+            Nothing uploaded, no signup.
+            <strong>Compress &amp; Edit are always free.</strong>
+            Scanner: first 3 pages free — unlimited for $5.
+          </p>
+
+          <div class="hero-pills">
+            <span class="pill hi">Scanner</span>
+            <span class="pill hi">Compressor</span>
+            <span class="pill hi">Editor</span>
+            <span class="pill hi">Signature</span>
+            <span class="pill">PDF · JPG · PNG · WEBP</span>
+            <span class="pill">No signup · No cloud</span>
+          </div>
+
+          <!-- Before / After Slider -->
+          <div
+            class="ba-container"
+            id="baContainer"
+            role="img"
+            aria-label="Before and after document comparison. Drag to compare."
+          >
+            <div class="ba-label-strip" aria-hidden="true">
+              <span>Before — Clean</span>
+              <span class="ba-label-after">After — Scanned ✓</span>
+            </div>
+            <div class="ba-before" aria-hidden="true">
+              <svg class="ba-doc-svg" viewBox="0 0 300 390" xmlns="http://www.w3.org/2000/svg">
+                <rect width="300" height="390" fill="#F5F0E8" />
+                <rect x="20" y="22" width="50" height="50" rx="4" fill="#E8E0D0" />
+                <rect x="80" y="28" width="110" height="8" rx="2" fill="#1A1612" opacity=".7" />
+                <rect x="80" y="42" width="80" height="5" rx="1.5" fill="#1A1612" opacity=".4" />
+                <rect x="80" y="53" width="95" height="5" rx="1.5" fill="#1A1612" opacity=".35" />
+                <line x1="20" y1="88" x2="280" y2="88" stroke="#1A1612" stroke-width="1" opacity=".15" />
+                <rect x="20" y="104" width="200" height="12" rx="2" fill="#1A1612" opacity=".72" />
+                <rect x="20" y="130" width="260" height="5" rx="1.5" fill="#1A1612" opacity=".22" />
+                <rect x="20" y="140" width="240" height="5" rx="1.5" fill="#1A1612" opacity=".18" />
+                <rect x="20" y="150" width="255" height="5" rx="1.5" fill="#1A1612" opacity=".20" />
+                <rect x="20" y="160" width="180" height="5" rx="1.5" fill="#1A1612" opacity=".16" />
+                <rect x="20" y="176" width="100" height="75" rx="3" fill="#E2DBCE" />
+                <rect x="25" y="181" width="90" height="65" rx="2" fill="#D8D0C2" />
+                <rect x="132" y="180" width="148" height="5" rx="1.5" fill="#1A1612" opacity=".20" />
+                <rect x="132" y="191" width="130" height="5" rx="1.5" fill="#1A1612" opacity=".17" />
+                <rect x="132" y="202" width="140" height="5" rx="1.5" fill="#1A1612" opacity=".18" />
+                <rect x="132" y="213" width="110" height="5" rx="1.5" fill="#1A1612" opacity=".15" />
+                <rect x="132" y="224" width="136" height="5" rx="1.5" fill="#1A1612" opacity=".17" />
+                <rect x="132" y="235" width="90" height="5" rx="1.5" fill="#1A1612" opacity=".14" />
+                <rect x="20" y="264" width="260" height="5" rx="1.5" fill="#1A1612" opacity=".20" />
+                <rect x="20" y="274" width="248" height="5" rx="1.5" fill="#1A1612" opacity=".17" />
+                <rect x="20" y="284" width="255" height="5" rx="1.5" fill="#1A1612" opacity=".19" />
+                <rect x="20" y="294" width="200" height="5" rx="1.5" fill="#1A1612" opacity=".15" />
+                <line x1="20" y1="328" x2="120" y2="328" stroke="#1A1612" stroke-width="1" opacity=".2" />
+                <rect x="20" y="334" width="60" height="4" rx="1" fill="#1A1612" opacity=".25" />
+                <rect x="20" y="342" width="80" height="3" rx="1" fill="#1A1612" opacity=".15" />
+                <rect x="130" y="372" width="40" height="4" rx="1" fill="#1A1612" opacity=".15" />
+              </svg>
+            </div>
+            <div class="ba-after" id="baAfter" aria-hidden="true">
+              <svg class="ba-doc-svg" viewBox="0 0 300 390" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.78" numOctaves="4" stitchTiles="stitch" result="noise" />
+                    <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
+                    <feBlend in="SourceGraphic" in2="gray" mode="multiply" result="blended" />
+                    <feComponentTransfer in="blended">
+                      <feFuncR type="linear" slope="1.06" intercept="-0.025" />
+                      <feFuncG type="linear" slope="1.02" intercept="0.008" />
+                      <feFuncB type="linear" slope="0.94" intercept="0.015" />
+                    </feComponentTransfer>
+                  </filter>
+                  <radialGradient id="vig" cx="50%" cy="50%" r="75%">
+                    <stop offset="50%" stop-color="transparent" />
+                    <stop offset="100%" stop-color="rgba(0,0,0,0.25)" />
+                  </radialGradient>
+                  <linearGradient id="bind" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="rgba(0,0,0,0.18)" />
+                    <stop offset="6%" stop-color="rgba(0,0,0,0.08)" />
+                    <stop offset="12%" stop-color="transparent" />
+                  </linearGradient>
+                </defs>
+                <g transform="rotate(-0.7 150 195)" filter="url(#grain)">
+                  <rect width="300" height="390" fill="#EDE5D4" />
+                  <rect width="300" height="390" fill="rgba(160,110,40,0.055)" />
+                  <rect x="20" y="22" width="50" height="50" rx="4" fill="#DDD5C0" />
+                  <rect x="80" y="28" width="110" height="8" rx="2" fill="#18130E" opacity=".68" />
+                  <rect x="80" y="42" width="80" height="5" rx="1.5" fill="#18130E" opacity=".38" />
+                  <rect x="80" y="53" width="95" height="5" rx="1.5" fill="#18130E" opacity=".32" />
+                  <line x1="20" y1="88" x2="280" y2="88" stroke="#18130E" stroke-width="1" opacity=".14" />
+                  <rect x="20" y="104" width="200" height="12" rx="2" fill="#18130E" opacity=".68" />
+                  <rect x="20" y="130" width="260" height="5" rx="1.5" fill="#18130E" opacity=".24" />
+                  <rect x="20" y="140" width="240" height="5" rx="1.5" fill="#18130E" opacity=".20" />
+                  <rect x="20" y="150" width="255" height="5" rx="1.5" fill="#18130E" opacity=".22" />
+                  <rect x="20" y="160" width="180" height="5" rx="1.5" fill="#18130E" opacity=".18" />
+                  <rect x="20" y="176" width="100" height="75" rx="3" fill="#D8CFC0" />
+                  <rect x="25" y="181" width="90" height="65" rx="2" fill="#CCC4B4" />
+                  <rect x="132" y="180" width="148" height="5" rx="1.5" fill="#18130E" opacity=".22" />
+                  <rect x="132" y="191" width="130" height="5" rx="1.5" fill="#18130E" opacity=".19" />
+                  <rect x="132" y="202" width="140" height="5" rx="1.5" fill="#18130E" opacity=".20" />
+                  <rect x="132" y="213" width="110" height="5" rx="1.5" fill="#18130E" opacity=".17" />
+                  <rect x="132" y="224" width="136" height="5" rx="1.5" fill="#18130E" opacity=".19" />
+                  <rect x="132" y="235" width="90" height="5" rx="1.5" fill="#18130E" opacity=".16" />
+                  <rect x="20" y="264" width="260" height="5" rx="1.5" fill="#18130E" opacity=".22" />
+                  <rect x="20" y="274" width="248" height="5" rx="1.5" fill="#18130E" opacity=".19" />
+                  <rect x="20" y="284" width="255" height="5" rx="1.5" fill="#18130E" opacity=".21" />
+                  <rect x="20" y="294" width="200" height="5" rx="1.5" fill="#18130E" opacity=".17" />
+                  <line x1="20" y1="328" x2="120" y2="328" stroke="#18130E" stroke-width="1" opacity=".18" />
+                  <rect x="20" y="334" width="60" height="4" rx="1" fill="#18130E" opacity=".22" />
+                  <rect x="20" y="342" width="80" height="3" rx="1" fill="#18130E" opacity=".14" />
+                  <rect x="130" y="372" width="40" height="4" rx="1" fill="#18130E" opacity=".14" />
+                  <rect width="300" height="390" fill="url(#vig)" />
+                  <rect width="300" height="390" fill="url(#bind)" />
+                </g>
+              </svg>
+            </div>
+            <div class="ba-divider" id="baDivider" aria-hidden="true">
+              <div class="ba-handle" id="baHandle">
+                <svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 2L1 7l3 5M10 2l3 5-3 5" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+            </div>
+            <p class="ba-hint" aria-hidden="true">← Drag to compare →</p>
+          </div>
+        </div>
+
+        <!-- Right: App Card + Scanner Scene -->
+        <div class="hero-right">
+         <div class="scanner-scene" aria-hidden="true">
       <div class="particle-wrap" id="particleWrap"></div>
       <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -404,367 +463,978 @@
       </div>
     </div>
 
-    <!-- ══ APP CARD ══ -->
-    <div class="app-card">
-      <div class="card-topbar" aria-hidden="true">
-        <div class="card-dots"><div class="card-dot"></div><div class="card-dot"></div><div class="card-dot"></div></div>
-        <span class="card-title">ScanDrift // processor</span>
-        <span></span>
+          <!-- App Card -->
+          <div class="app-card">
+            <div class="card-topbar" aria-hidden="true">
+              <div class="card-dots"><div class="card-dot"></div><div class="card-dot"></div><div class="card-dot"></div></div>
+              <span class="card-title">ScanDrift // scanner</span>
+              <span></span>
+            </div>
+            <div class="card-body">
+              <form id="form" novalidate aria-label="Scanner effect form">
+                <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload PDF or image">
+                  <input type="file" id="pdfInput" accept=".pdf,.jpg,.jpeg,.png,.webp,.tiff,.tif,.bmp" aria-label="Choose file" multiple />
+                  <div class="dz-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" /><polyline points="16 12 12 8 8 12" /><line x1="12" y1="8" x2="12" y2="20" />
+                    </svg>
+                  </div>
+                  <p class="dz-title">Drop file(s) here or click to browse</p>
+                  <p class="dz-types">PDF · JPG · PNG · WEBP · TIFF · BMP · Max 50 MB · Multi-image supported</p>
+                </div>
+                <div class="file-bar" id="fileBar" role="status" aria-live="polite">
+                  <span class="file-type-badge" id="fileTypeBadge">PDF</span>
+                  <span class="file-name" id="fileName"></span>
+                  <span class="file-sz" id="fileSize"></span>
+                  <button type="button" class="clear-btn" id="clearBtn" aria-label="Remove file">✕</button>
+                </div>
+
+                <label class="field-label" id="preset-lbl">Scan Preset</label>
+                <div class="preset-row" role="radiogroup" aria-labelledby="preset-lbl">
+                  <div class="preset-opt"><input type="radio" name="preset" id="p-light" value="light" /><label for="p-light"><span class="p-name">Light</span><span class="p-desc">Subtle warmth &amp; grain</span></label></div>
+                  <div class="preset-opt"><input type="radio" name="preset" id="p-medium" value="medium" checked /><label for="p-medium"><span class="p-name">Medium</span><span class="p-desc">Natural office scan</span></label></div>
+                  <div class="preset-opt"><input type="radio" name="preset" id="p-heavy" value="heavy" /><label for="p-heavy"><span class="p-name">Heavy</span><span class="p-desc">Worn photocopy</span></label></div>
+                </div>
+
+                <div class="adv-header" id="advToggle" role="button" aria-expanded="false" aria-controls="advBody" tabindex="0">
+                  <span class="adv-header-label">Advanced Controls</span>
+                  <span class="adv-caret" id="advCaret" aria-hidden="true">▾</span>
+                </div>
+                <div class="adv-body" id="advBody">
+                  <div class="scanner-model-wrap">
+                    <label class="field-lbl" for="scannerModel">Scanner Model <span class="field-hint">auto-fills controls below</span></label>
+                    <select id="scannerModel">
+                      <option value="">— Custom / Manual —</option>
+                      <option value="canon-office-2020">Canon Office 2020 — crisp, minimal warmth</option>
+                      <option value="hp-home-budget">HP Home Budget — warm, grainy, fringing, JPEG</option>
+                      <option value="library-xerox-worn">Library Xerox (Worn) — heavy, dropout, smear</option>
+                      <option value="archive-flatbed-2005">Archive Flatbed 2005 — aged, focus falloff, lid leak</option>
+                      <option value="fujitsu-production">Fujitsu Production — near-perfect, subtle</option>
+                      <option value="magazine-print">Magazine / Print Scan — moiré interference</option>
+                    </select>
+                    <p class="model-desc" id="modelDesc"></p>
+                  </div>
+                  <div class="adv-grid">
+                    <div class="field"><div class="field-lbl">Noise <span id="noiseVal">8</span></div><input type="range" id="noise" min="0" max="30" step="1" value="8" /></div>
+                    <div class="field"><div class="field-lbl">Yellow Tint <span id="tintVal">1.0</span></div><input type="range" id="yellowTint" min="0" max="5" step="0.5" value="1.0" /></div>
+                    <div class="field"><div class="field-lbl">Brightness <span id="brightVal">1.0</span></div><input type="range" id="brightness" min="0.85" max="1.15" step="0.01" value="1.0" /></div>
+                    <div class="field"><div class="field-lbl">Contrast <span id="contrastVal">1.05</span></div><input type="range" id="contrast" min="0.9" max="1.3" step="0.01" value="1.05" /></div>
+                    <div class="field"><div class="field-lbl">Rotation° <span id="rotVal">0.4</span></div><input type="range" id="rotation" min="0" max="2" step="0.1" value="0.4" /></div>
+                    <div class="field"><div class="field-lbl">Skew <span id="skewVal">0</span></div><input type="range" id="manualSkew" min="-5" max="5" step="0.5" value="0" /></div>
+                    <div class="field"><div class="field-lbl">Sharpness</div><select id="sharpness"><option value="0">Off</option><option value="1" selected>Normal</option><option value="2">Strong</option></select></div>
+                    <div class="field"><div class="field-lbl">DPI</div><select id="dpi"><option value="150">150 — fast</option><option value="200">200</option><option value="300" selected>300 — crisp</option></select></div>
+                  </div>
+                  <div class="toggles-section-lbl">Paper &amp; Document</div>
+                  <div class="toggles-wrap">
+                    <div class="toggle-row"><span class="toggle-lbl">Paper Grain</span><label class="toggle"><input type="checkbox" id="grain" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">Auto Deskew</span><label class="toggle"><input type="checkbox" id="deskew" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">Binding Shadow</span><label class="toggle"><input type="checkbox" id="bindingShadow" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">Crumpled Paper</span><label class="toggle"><input type="checkbox" id="crumple" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                  </div>
+                  <div class="crumple-opts" id="crumpleOpts" style="display:none"><div class="field"><div class="field-lbl">Crumple Intensity <span id="crumpleVal">1.0</span></div><input type="range" id="crumpleIntensity" min="0.2" max="2" step="0.1" value="1.0" /></div></div>
+                  <div class="toggles-section-lbl">Optical Artefacts</div>
+                  <div class="toggles-wrap">
+                    <div class="toggle-row"><span class="toggle-lbl">Channel Misregistration <span class="toggle-hint">CCD colour fringing on text edges</span></span><label class="toggle"><input type="checkbox" id="channelMisreg" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">JPEG Internalization <span class="toggle-hint">Scanner firmware compression round-trip</span></span><label class="toggle"><input type="checkbox" id="jpegInternalize" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">Scan Line Dropout <span class="toggle-hint">Rare dead-pixel horizontal lines</span></span><label class="toggle"><input type="checkbox" id="scanDropout" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">Moiré Pattern <span class="toggle-hint">Halftone interference — use for printed source material</span></span><label class="toggle"><input type="checkbox" id="moire" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">Ambient Light Leak <span class="toggle-hint">Lid not fully closed — edge bleach &amp; warm cast</span></span><label class="toggle"><input type="checkbox" id="ambientLeak" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">Motion Smear <span class="toggle-hint">Page shift during scan — text edge trailing</span></span><label class="toggle"><input type="checkbox" id="motionSmear" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                    <div class="toggle-row"><span class="toggle-lbl">Focus Gradient <span class="toggle-hint">Depth-of-field falloff for unflat documents</span></span><label class="toggle"><input type="checkbox" id="focusGradient" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                  </div>
+                  <div class="sub-opts" id="focusOpts" style="display:none">
+                    <div class="sub-opts-grid">
+                      <div class="field"><div class="field-lbl">Sharp Edge</div><select id="focusEdge"><option value="left" selected>Left (spine)</option><option value="right">Right</option><option value="top">Top</option><option value="bottom">Bottom</option></select></div>
+                      <div class="field"><div class="field-lbl">Blur Intensity <span id="focusIntensityVal">1.0</span></div><input type="range" id="focusGradientIntensity" min="0.3" max="3" step="0.1" value="1.0" /></div>
+                    </div>
+                  </div>
+                  <div class="toggles-section-lbl">Multi-page</div>
+                  <div class="toggles-wrap">
+                    <div class="toggle-row"><span class="toggle-lbl">Back Bleed / Show-through <span class="toggle-hint">Ghost of reverse page visible through paper — needs 2+ pages</span></span><label class="toggle"><input type="checkbox" id="backBleed" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+                  </div>
+                  <div class="sub-opts" id="backBleedOpts" style="display:none">
+                    <div class="field"><div class="field-lbl">Bleed Opacity <span id="backBleedOpacityVal">0.07</span></div><input type="range" id="backBleedOpacity" min="0.02" max="0.18" step="0.01" value="0.07" /><p class="sub-hint">0.04 = thick cardstock · 0.12 = thin paper</p></div>
+                  </div>
+                </div>
+
+                <label class="field-label" id="fmt-lbl">Output Format</label>
+                <div class="format-row" role="radiogroup" aria-labelledby="fmt-lbl">
+                  <div class="fmt-opt"><input type="radio" name="format" id="f-pdf" value="pdf" checked /><label for="f-pdf">📄 PDF</label></div>
+                  <div class="fmt-opt" id="fmt-image-wrap"><input type="radio" name="format" id="f-image" value="image" /><label for="f-image">🖼 Image</label></div>
+                  <div class="fmt-opt"><input type="radio" name="format" id="f-zip" value="zip" /><label for="f-zip">🗜 ZIP</label></div>
+                </div>
+
+                <div class="sig-section">
+                  <div class="sig-header">
+                    <span class="sig-icon" aria-hidden="true">✍</span>
+                    <span class="sig-lbl">Add Signature</span>
+                    <label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" id="sigEnabled" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                  </div>
+                  <div class="sig-preview-row" id="sigPreviewRow">
+                    <div class="sig-thumb-wrap" id="sigThumbWrap"><span class="sig-empty-lbl">No signature set</span></div>
+                    <span class="sig-meta" id="sigMeta"></span>
+                    <button type="button" class="sig-configure-btn" id="sigConfigureBtn">Configure</button>
+                  </div>
+                </div>
+                <input type="hidden" id="sigData" name="sigData" />
+                <input type="hidden" id="sigX" name="sigX" value="0.6" />
+                <input type="hidden" id="sigY" name="sigY" value="0.85" />
+                <input type="hidden" id="sigW" name="sigW" value="0.2" />
+                <input type="hidden" id="sigH" name="sigH" value="0.05" />
+                <input type="hidden" id="sigPage" name="sigPage" value="last" />
+                <input type="hidden" id="sigRotation" name="sigRotation" value="0" />
+
+                <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                  <div class="btn-spinner"></div>
+                  <span class="btn-label">Apply Scan Effect</span>
+                </button>
+                <div class="progress-wrap" id="progressWrap" role="status" aria-live="polite">
+                  <div class="progress-top">
+                    <span class="progress-label" id="progressLabel">Processing…</span>
+                    <span class="progress-pct" id="progressPct">0%</span>
+                  </div>
+                  <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack">
+                    <div class="progress-fill" id="progressFill"></div>
+                  </div>
+                </div>
+                <div class="status" id="statusMsg" role="alert"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ STATS ══════════════ -->
+      <div class="stats-band" aria-label="Key statistics">
+        <div class="stat-cell"><span class="stat-num">3</span><span class="stat-label">Tools</span></div>
+        <div class="stat-cell"><span class="stat-num">14+</span><span class="stat-label">Scan effects</span></div>
+        <div class="stat-cell"><span class="stat-num">60%</span><span class="stat-label">Max compression</span></div>
+        <div class="stat-cell"><span class="stat-num">300</span><span class="stat-label">DPI output</span></div>
+        <div class="stat-cell"><span class="stat-num">0</span><span class="stat-label">Files stored</span></div>
       </div>
-      <div class="card-body">
-        <form id="form" novalidate aria-label="Scanner effect form">
-          <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload PDF or image">
-            <input type="file" id="pdfInput" accept=".pdf,.jpg,.jpeg,.png,.webp,.tiff,.tif,.bmp" aria-label="Choose file">
-            <div class="dz-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="8" x2="12" y2="20"/>
+
+      <!-- ══════════════ TOOLS SHOWCASE ══════════════ -->
+      <section class="tools-showcase" id="tools" aria-label="ScanDrift tools">
+        <div class="section-hd">
+          <span class="section-tag">What We Do</span>
+          <h2 class="section-h2">Everything your PDF needs</h2>
+          <p class="section-sub">Three independent tools. Use one or all three. Everything runs locally — your files never leave your machine.</p>
+        </div>
+        <div class="tools-showcase-grid">
+
+          <div class="tool-showcase-card">
+            <div class="tsc-header">
+              <div class="tsc-icon">🖨</div>
+              <div>
+                <h3 class="tsc-title">PDF Scanner</h3>
+                <span class="tsc-badge free">3 pages free · $5 unlimited</span>
+              </div>
+            </div>
+            <p class="tsc-desc">Not a filter — actual optical physics. Apply scanner artifacts that look genuinely real. Used by researchers, lawyers, journalists, and creatives worldwide.</p>
+            <ul class="tsc-features">
+              <li>Channel misregistration (CCD colour fringing)</li>
+              <li>Moiré interference patterns</li>
+              <li>Paper back-bleed / show-through</li>
+              <li>Focus gradient depth-of-field</li>
+              <li>Motion smear, JPEG internalization</li>
+              <li>6 scanner model presets</li>
+              <li>PDF, Image, and ZIP output</li>
+            </ul>
+            <a href="#hero" class="tsc-cta">Try the Scanner →</a>
+          </div>
+
+          <div class="tool-showcase-card tsc-featured">
+            <div class="tsc-header">
+              <div class="tsc-icon">🗜</div>
+              <div>
+                <h3 class="tsc-title">PDF Compressor</h3>
+                <span class="tsc-badge always-free">Always free · No limits</span>
+              </div>
+            </div>
+            <p class="tsc-desc">Professional-grade compression that understands PDF structure. Preserves vector text and fonts — only recompresses embedded images.</p>
+            <ul class="tsc-features">
+              <li>Up to 60% file size reduction</li>
+              <li>Preserves selectable text and fonts</li>
+              <li>High, Medium, and Small File presets</li>
+              <li>Smart rasterization for maximum shrink</li>
+              <li>Before/after size comparison</li>
+              <li>Any PDF up to 50 MB</li>
+            </ul>
+            <a href="#compress" class="tsc-cta">Compress a PDF →</a>
+          </div>
+
+          <div class="tool-showcase-card">
+            <div class="tsc-header">
+              <div class="tsc-icon">✏️</div>
+              <div>
+                <h3 class="tsc-title">PDF Editor</h3>
+                <span class="tsc-badge always-free">Always free · No limits</span>
+              </div>
+            </div>
+            <p class="tsc-desc">A full canvas editor in the browser. Redact sensitive content, annotate, sign, and export a compressed, pixel-perfect PDF.</p>
+            <ul class="tsc-features">
+              <li>Whiteout and blackout redaction</li>
+              <li>Highlight, rectangle, circle, arrow, line</li>
+              <li>Text with font, size, bold, italic, color</li>
+              <li>Freehand draw and stamps</li>
+              <li>Draw or upload signature</li>
+              <li>Select, move, resize any annotation</li>
+              <li>Page thumbnails, zoom, undo/redo</li>
+            </ul>
+            <a href="#editor" class="tsc-cta">Open the Editor →</a>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══════════════ HOW IT WORKS ══════════════ -->
+     
+
+      <!-- ══════════════ FEATURES ══════════════ -->
+      <section class="features-section" id="features" aria-label="Features">
+        <div class="section-hd">
+          <span class="section-tag">Deep Dive</span>
+          <h2 class="section-h2">What makes each tool different</h2>
+          <p class="section-sub">Three tools, each with genuine depth. Here's what's under the hood.</p>
+        </div>
+
+        <!-- ── Scanner Features ── -->
+        <div class="feature-group">
+          <div class="feature-group-header">
+            <span class="feature-group-icon">🖨</span>
+            <div>
+              <h3 class="feature-group-title">PDF Scanner</h3>
+              <p class="feature-group-sub">Physics-based optical simulation — not a filter</p>
+            </div>
+            <span class="feature-group-badge scanner-badge">3 pages free · $5 unlimited</span>
+          </div>
+          <div class="feature-cells">
+            <article class="feature-cell">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <rect x="2" y="6" width="52" height="46" rx="3" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="8" y="14" width="28" height="4" rx="2" fill="var(--text-3)" opacity=".4" filter="url(#ff-blur)"/>
+                  <rect x="8" y="22" width="40" height="2.5" rx="1.5" fill="var(--text-3)" opacity=".2" filter="url(#ff-blur)"/>
+                  <rect x="8" y="28" width="35" height="2.5" rx="1.5" fill="var(--text-3)" opacity=".2" filter="url(#ff-blur)"/>
+                  <rect x="8" y="34" width="38" height="2.5" rx="1.5" fill="var(--text-3)" opacity=".2" filter="url(#ff-blur)"/>
+                  <defs>
+                    <filter id="ff-blur"><feGaussianBlur stdDeviation="1.2"/></filter>
+                    <filter id="ff-led"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                  </defs>
+                  <circle cx="50" cy="36" r="16" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8"/>
+                  <rect x="40" y="29" width="20" height="3.5" rx=".8" fill="var(--text-2)" opacity=".8"/>
+                  <rect x="40" y="36" width="16" height="3.5" rx=".8" fill="var(--text-2)" opacity=".75"/>
+                  <line x1="62" y1="48" x2="70" y2="56" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <h4 class="feature-title">Crisp Text Preservation</h4>
+              <p class="feature-desc">Grain applies only to bright background pixels — ink stays clean. Letters remain razor sharp at any zoom level.</p>
+            </article>
+            <article class="feature-cell">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <rect x="4" y="10" width="64" height="38" rx="3" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="10" y="21" width="48" height="4" rx="1" fill="#cc3333" opacity=".35"/>
+                  <rect x="10" y="23" width="48" height="4" rx="1" fill="#33aa44" opacity=".45"/>
+                  <rect x="10" y="25" width="48" height="4" rx="1" fill="#3366cc" opacity=".35"/>
+                  <rect x="10" y="23" width="48" height="4" rx="1" fill="#1a1612" opacity=".7"/>
+                  <text x="36" y="56" font-family="IBM Plex Mono" font-size="4.5" fill="var(--text-3)" text-anchor="middle" opacity=".45" letter-spacing=".5">RGB MISREG</text>
+                </svg>
+              </div>
+              <h4 class="feature-title">Channel Misregistration</h4>
+              <p class="feature-desc">CCD-bar scanners read R, G, and B in separate passes. Sub-millimetre vibration offsets them, producing the characteristic colour fringing on text edges.</p>
+            </article>
+            <article class="feature-cell">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <rect x="38" y="4" width="30" height="42" rx="2" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.4"/>
+                  <rect x="43" y="11" width="20" height="3" rx="1" fill="var(--text-2)" opacity=".7"/>
+                  <rect x="43" y="18" width="17" height="2" rx="1" fill="var(--text-3)" opacity=".42"/>
+                  <rect x="43" y="23" width="19" height="2" rx="1" fill="var(--text-3)" opacity=".42"/>
+                  <path d="M33 26 Q35 14 40 10" stroke="var(--accent)" stroke-width="1.6" fill="none" stroke-dasharray="2.5 2" stroke-linecap="round"/>
+                  <polygon points="38,7 42,11 36,13" fill="var(--accent)"/>
+                  <text x="7" y="51" font-family="IBM Plex Mono" font-size="4.5" fill="var(--text-3)" opacity=".45">±10°</text>
+                </svg>
+              </div>
+              <h4 class="feature-title">Auto Deskew</h4>
+              <p class="feature-desc">Projection-profile algorithm detects and corrects tilt up to ±10°, simulating real-world scanner misalignment convincingly.</p>
+            </article>
+            <article class="feature-cell feature-cell--highlight">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <rect x="4" y="4" width="30" height="50" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="38" y="4" width="30" height="50" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <!-- Page 1 content -->
+                  <rect x="9" y="10" width="20" height="2.5" rx="1" fill="var(--text-3)" opacity=".5"/>
+                  <rect x="9" y="16" width="18" height="2" rx="1" fill="var(--text-3)" opacity=".3"/>
+                  <rect x="9" y="21" width="20" height="2" rx="1" fill="var(--text-3)" opacity=".3"/>
+                  <!-- Bleed ghost on page 2 -->
+                  <rect x="43" y="10" width="20" height="2.5" rx="1" fill="var(--accent)" opacity=".12"/>
+                  <rect x="43" y="16" width="18" height="2" rx="1" fill="var(--accent)" opacity=".08"/>
+                  <rect x="43" y="21" width="20" height="2" rx="1" fill="var(--accent)" opacity=".08"/>
+                  <rect x="43" y="10" width="20" height="2.5" rx="1" fill="var(--text-3)" opacity=".4"/>
+                  <rect x="43" y="16" width="18" height="2" rx="1" fill="var(--text-3)" opacity=".25"/>
+                  <!-- Arrow between pages -->
+                  <path d="M36 29 L38 29" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+                  <text x="36" y="56" font-family="IBM Plex Mono" font-size="4" fill="var(--accent)" text-anchor="middle" opacity=".7" letter-spacing=".3">SHOW-THROUGH</text>
+                </svg>
+              </div>
+              <div class="feature-new-badge">Advanced</div>
+              <h4 class="feature-title">Back Bleed / Show-through</h4>
+              <p class="feature-desc">Real paper is semi-translucent. Each page bleeds a faint ghost of its reverse side — a detail no other tool simulates. Needs 2+ pages to activate.</p>
+            </article>
+            <article class="feature-cell feature-cell--highlight">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <rect x="8" y="4" width="56" height="50" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <!-- Sharp left edge -->
+                  <rect x="12" y="10" width="18" height="3" rx="1" fill="var(--text-2)" opacity=".75"/>
+                  <rect x="12" y="17" width="16" height="2.5" rx="1" fill="var(--text-2)" opacity=".7"/>
+                  <rect x="12" y="23" width="18" height="2.5" rx="1" fill="var(--text-2)" opacity=".68"/>
+                  <!-- Blur gradient right -->
+                  <rect x="34" y="10" width="14" height="3" rx="1" fill="var(--text-3)" opacity=".35" filter="url(#ff-blur)"/>
+                  <rect x="34" y="17" width="16" height="2.5" rx="1" fill="var(--text-3)" opacity=".22" filter="url(#ff-blur)"/>
+                  <rect x="34" y="23" width="12" height="2.5" rx="1" fill="var(--text-3)" opacity=".18" filter="url(#ff-blur)"/>
+                  <rect x="50" y="10" width="10" height="3" rx="1" fill="var(--text-3)" opacity=".12" filter="url(#ff-blur)"/>
+                  <rect x="50" y="17" width="8" height="2.5" rx="1" fill="var(--text-3)" opacity=".08" filter="url(#ff-blur)"/>
+                  <!-- Gradient overlay indicating focus falloff -->
+                  <rect x="30" y="4" width="34" height="50" fill="url(#focus-grad)" opacity=".25"/>
+                  <defs>
+                    <linearGradient id="focus-grad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stop-color="transparent"/>
+                      <stop offset="100%" stop-color="var(--bg)"/>
+                    </linearGradient>
+                  </defs>
+                  <text x="36" y="52" font-family="IBM Plex Mono" font-size="4" fill="var(--accent)" text-anchor="middle" opacity=".7" letter-spacing=".3">FOCUS FALLOFF</text>
+                </svg>
+              </div>
+              <div class="feature-new-badge">Advanced</div>
+              <h4 class="feature-title">Focus Gradient</h4>
+              <p class="feature-desc">Depth-of-field blur that increases away from a chosen edge — simulating a document that wasn't fully flat on the glass. Configurable edge and intensity.</p>
+            </article>
+            <article class="feature-cell">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <defs><filter id="ff-shld"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                  <path d="M36 4 L58 15 L58 33 Q58 50 36 56 Q14 50 14 33 L14 15 Z" fill="var(--surface-2)" stroke="var(--accent)" stroke-width="1.4"/>
+                  <rect x="27" y="30" width="18" height="14" rx="2.5" fill="var(--accent)" opacity=".75"/>
+                  <path d="M30 30 L30 24.5 Q30 19 36 19 Q42 19 42 24.5 L42 30" stroke="var(--accent)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+                  <circle cx="36" cy="36.5" r="2.5" fill="var(--bg)"/>
+                  <text x="36" y="54" font-family="IBM Plex Mono" font-size="5.5" fill="var(--accent)" text-anchor="middle" opacity=".7" letter-spacing="1">LOCAL</text>
+                </svg>
+              </div>
+              <h4 class="feature-title">100% Private Processing</h4>
+              <p class="feature-desc">Everything runs on your machine locally. Files are never uploaded, never stored. Close the tab and nothing remains.</p>
+            </article>
+          </div>
+           <section class="section" id="how-it-works">
+        <div class="section-hd">
+          <span class="section-tag">Process</span>
+          <h3 class="section-h2">How the scanner works</h3>
+        </div>
+        <div class="steps-grid">
+          <div class="step">
+            <span class="step-num-bg" aria-hidden="true">1</span>
+            <div class="step-illo" aria-hidden="true">
+              <svg viewBox="0 0 68 52" fill="none" overflow="visible">
+                <rect x="8" y="14" width="52" height="34" rx="4" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1.2" />
+                <rect x="8" y="14" width="52" height="9" rx="4" fill="var(--surface)" stroke="var(--border-mid)" stroke-width="1.2" />
+                <circle cx="17" cy="18.5" r="2" fill="var(--text-3)" opacity=".45" />
+                <circle cx="24" cy="18.5" r="2" fill="var(--text-3)" opacity=".45" />
+                <circle cx="31" cy="18.5" r="2" fill="var(--text-3)" opacity=".45" />
+                <rect x="18" y="28" width="32" height="16" rx="2.5" fill="var(--accent)" opacity=".07" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2.5 2" />
+                <line x1="34" y1="27" x2="34" y2="41" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" />
+                <polyline points="29,31 34,26 39,31" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <rect x="22" y="44" width="24" height="6" rx="1.5" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1" />
               </svg>
             </div>
-            <p class="dz-title">Drop file here or click to browse</p>
-            <p class="dz-types">PDF · JPG · PNG · WEBP · TIFF · BMP &nbsp;·&nbsp; Max 50 MB</p>
+            <h3 class="step-title">Upload your file</h3>
+            <p class="step-desc">Drop any PDF or image — JPG, PNG, WEBP, TIFF, BMP — up to 50 MB. Multi-page PDFs are handled page by page in parallel.</p>
           </div>
-          <div class="file-bar" id="fileBar" role="status" aria-live="polite">
-            <span class="file-type-badge" id="fileTypeBadge">PDF</span>
-            <span class="file-name" id="fileName"></span>
-            <span class="file-sz" id="fileSize"></span>
-            <button type="button" class="clear-btn" id="clearBtn" aria-label="Remove file">✕</button>
-          </div>
-          <label class="field-label" id="preset-lbl">Scan Preset</label>
-          <div class="preset-row" role="radiogroup" aria-labelledby="preset-lbl">
-            <div class="preset-opt"><input type="radio" name="preset" id="p-light" value="light"><label for="p-light"><span class="p-name">Light</span><span class="p-desc">Subtle warmth &amp; grain</span></label></div>
-            <div class="preset-opt"><input type="radio" name="preset" id="p-medium" value="medium" checked><label for="p-medium"><span class="p-name">Medium</span><span class="p-desc">Natural office scan</span></label></div>
-            <div class="preset-opt"><input type="radio" name="preset" id="p-heavy" value="heavy"><label for="p-heavy"><span class="p-name">Heavy</span><span class="p-desc">Worn photocopy</span></label></div>
-          </div>
-          <div class="adv-header" id="advToggle" role="button" aria-expanded="false" aria-controls="advBody" tabindex="0">
-            <span class="adv-header-label">Advanced Controls</span>
-            <span class="adv-caret" id="advCaret" aria-hidden="true">▾</span>
-          </div>
-          <div class="adv-body" id="advBody">
-            <div class="adv-grid">
-              <div class="field"><div class="field-lbl">Noise <span id="noiseVal">8</span></div><input type="range" id="noise" min="0" max="30" step="1" value="8"></div>
-              <div class="field"><div class="field-lbl">Yellow Tint <span id="tintVal">1.0</span></div><input type="range" id="yellowTint" min="0" max="5" step="0.5" value="1.0"></div>
-              <div class="field"><div class="field-lbl">Brightness <span id="brightVal">1.0</span></div><input type="range" id="brightness" min="0.85" max="1.15" step="0.01" value="1.0"></div>
-              <div class="field"><div class="field-lbl">Contrast <span id="contrastVal">1.05</span></div><input type="range" id="contrast" min="0.9" max="1.3" step="0.01" value="1.05"></div>
-              <div class="field"><div class="field-lbl">Rotation° <span id="rotVal">0.4</span></div><input type="range" id="rotation" min="0" max="2" step="0.1" value="0.4"></div>
-              <div class="field"><div class="field-lbl">Skew <span id="skewVal">0</span></div><input type="range" id="manualSkew" min="-5" max="5" step="0.5" value="0"></div>
-              <div class="field"><div class="field-lbl">Sharpness</div><select id="sharpness"><option value="0">Off</option><option value="1" selected>Normal</option><option value="2">Strong</option></select></div>
-              <div class="field"><div class="field-lbl">DPI</div><select id="dpi"><option value="150">150 — fast</option><option value="200">200</option><option value="300" selected>300 — crisp</option></select></div>
+          <div class="step">
+            <span class="step-num-bg" aria-hidden="true">2</span>
+            <div class="step-illo" aria-hidden="true">
+              <svg viewBox="0 0 68 52" fill="none" overflow="visible">
+                <circle cx="34" cy="26" r="22" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1.2" />
+                <circle cx="34" cy="26" r="11" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.4" />
+                <line x1="34" y1="26" x2="41" y2="17" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" />
+                <circle cx="34" cy="26" r="3" fill="var(--accent)" />
+                <text x="16" y="44" font-family="IBM Plex Mono" font-size="4.5" fill="var(--text-3)" opacity=".45">LT</text>
+                <text x="30" y="44" font-family="IBM Plex Mono" font-size="4.5" fill="var(--accent)">MED</text>
+                <text x="48" y="44" font-family="IBM Plex Mono" font-size="4.5" fill="var(--text-3)" opacity=".45">HV</text>
+              </svg>
             </div>
-            <div class="toggles-wrap">
-              <div class="toggle-row"><span class="toggle-lbl">Paper Grain</span><label class="toggle"><input type="checkbox" id="grain" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
-              <div class="toggle-row"><span class="toggle-lbl">Auto Deskew</span><label class="toggle"><input type="checkbox" id="deskew" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
-              <div class="toggle-row"><span class="toggle-lbl">Binding Shadow</span><label class="toggle"><input type="checkbox" id="bindingShadow"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+            <h3 class="step-title">Choose your preset</h3>
+            <p class="step-desc">Pick Light, Medium, or Heavy — or select a scanner model, or open the advanced panel to fine-tune 14+ individual effect parameters.</p>
+          </div>
+          <div class="step">
+            <span class="step-num-bg" aria-hidden="true">3</span>
+            <div class="step-illo" aria-hidden="true">
+              <svg viewBox="0 0 68 52" fill="none" overflow="visible">
+                <rect x="16" y="2" width="36" height="46" rx="3" fill="var(--surface)" stroke="var(--border-mid)" stroke-width="1.2" />
+                <rect x="22" y="9" width="24" height="3" rx="1" fill="var(--text-2)" opacity=".6" />
+                <rect x="22" y="15" width="20" height="2" rx="1" fill="var(--text-3)" opacity=".3" />
+                <rect x="22" y="20" width="22" height="2" rx="1" fill="var(--text-3)" opacity=".3" />
+                <rect x="22" y="25" width="17" height="2" rx="1" fill="var(--text-3)" opacity=".27" />
+                <rect x="22" y="30" width="21" height="2" rx="1" fill="var(--text-3)" opacity=".3" />
+                <line x1="34" y1="44" x2="34" y2="56" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" />
+                <polyline points="28,51 34,57 40,51" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                <line x1="25" y1="58" x2="43" y2="58" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" />
+              </svg>
+            </div>
+            <h3 class="step-title">Download instantly</h3>
+            <p class="step-desc">Receive a PDF, original image, or ZIP of PNGs — with warmth, grain, vignette, sensor artefacts, and physics-based effects baked in.</p>
+          </div>
+        </div>
+      </section>
+        </div>
+
+        <!-- ── Compressor Features ── -->
+        <div class="feature-group">
+          <div class="feature-group-header">
+            <span class="feature-group-icon">🗜</span>
+            <div>
+              <h3 class="feature-group-title">PDF Compressor</h3>
+              <p class="feature-group-sub">Professional-grade — structure-aware, not destructive</p>
+            </div>
+            <span class="feature-group-badge free-badge">Always free · No limits</span>
+          </div>
+          <div class="feature-cells feature-cells--two">
+            <article class="feature-cell">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <rect x="10" y="8" width="52" height="42" rx="3" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="16" y="16" width="28" height="4" rx="1.5" fill="var(--text-2)" opacity=".55"/>
+                  <rect x="16" y="24" width="40" height="2.5" rx="1" fill="var(--text-3)" opacity=".25"/>
+                  <rect x="16" y="30" width="36" height="2.5" rx="1" fill="var(--text-3)" opacity=".22"/>
+                  <rect x="8" y="22" width="6" height="16" rx="1.5" fill="var(--accent)" opacity=".18"/>
+                  <rect x="58" y="22" width="6" height="16" rx="1.5" fill="var(--accent)" opacity=".18"/>
+                  <line x1="11" y1="30" x2="61" y2="30" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 2" opacity=".5"/>
+                  <text x="36" y="55" font-family="IBM Plex Mono" font-size="4.5" fill="var(--accent)" text-anchor="middle" opacity=".65" letter-spacing=".5">GHOSTSCRIPT</text>
+                </svg>
+              </div>
+              <h4 class="feature-title">Structure-Aware Compression</h4>
+              <p class="feature-desc">Our compression engine understands the PDF object model. It recompresses embedded images while leaving vector paths, fonts, and text streams completely untouched — output is still selectable and searchable.</p>
+            </article>
+            <article class="feature-cell">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <!-- Three preset bars -->
+                  <rect x="8" y="10" width="56" height="12" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="8" y="26" width="56" height="12" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="8" y="42" width="56" height="12" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <!-- Fill levels -->
+                  <rect x="9" y="11" width="50" height="10" rx="1.5" fill="var(--accent)" opacity=".25"/>
+                  <rect x="9" y="27" width="34" height="10" rx="1.5" fill="var(--accent)" opacity=".35"/>
+                  <rect x="9" y="43" width="18" height="10" rx="1.5" fill="var(--accent)" opacity=".5"/>
+                  <text x="62" y="19" font-family="IBM Plex Mono" font-size="5" fill="var(--text-3)" opacity=".5" text-anchor="end">150 DPI</text>
+                  <text x="62" y="35" font-family="IBM Plex Mono" font-size="5" fill="var(--text-3)" opacity=".5" text-anchor="end">100 DPI</text>
+                  <text x="62" y="51" font-family="IBM Plex Mono" font-size="5" fill="var(--accent)" opacity=".8" text-anchor="end">RASTER</text>
+                </svg>
+              </div>
+              <h4 class="feature-title">Smart Three-Preset System</h4>
+              <p class="feature-desc">High Quality (150 DPI, image recompression only), Medium (100 DPI bicubic downsample), and Small File (smart rasterization that only activates when it produces a smaller output than GS alone).</p>
+            </article>
+          </div>
+        </div>
+
+        <!-- ── Editor Features ── -->
+        <div class="feature-group">
+          <div class="feature-group-header">
+            <span class="feature-group-icon">✏️</span>
+            <div>
+              <h3 class="feature-group-title">PDF Editor</h3>
+              <p class="feature-group-sub">Full canvas annotation and redaction, in the browser</p>
+            </div>
+            <span class="feature-group-badge free-badge">Always free · No limits</span>
+          </div>
+          <div class="feature-cells feature-cells--two">
+            <article class="feature-cell">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <rect x="6" y="4" width="42" height="52" rx="3" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="12" y="12" width="30" height="6" rx="1" fill="white" opacity=".9"/>
+                  <rect x="12" y="22" width="26" height="5" rx="1" fill="#fbbf24" opacity=".38"/>
+                  <rect x="12" y="31" width="18" height="2.5" rx="1" fill="var(--text-3)" opacity=".35"/>
+                  <path d="M12 44 Q16 40 20 44 Q24 48 28 43 Q32 38 36 43" stroke="var(--accent)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                  <rect x="52" y="6" width="14" height="44" rx="3" fill="var(--surface)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="55" y="12" width="8" height="2.5" rx="1" fill="var(--accent)" opacity=".6"/>
+                  <rect x="55" y="18" width="8" height="2.5" rx="1" fill="var(--text-3)" opacity=".3"/>
+                  <rect x="55" y="24" width="8" height="2.5" rx="1" fill="var(--text-3)" opacity=".3"/>
+                  <rect x="55" y="30" width="8" height="2.5" rx="1" fill="var(--text-3)" opacity=".3"/>
+                </svg>
+              </div>
+              <h4 class="feature-title">Full Annotation Suite</h4>
+              <p class="feature-desc">Whiteout and blackout redaction, highlight, rectangle, circle, arrow, line, freehand pen, text with full font controls, stamps, and an eraser that removes any annotation. All with undo/redo up to 80 steps.</p>
+            </article>
+            <article class="feature-cell feature-cell--highlight">
+              <div class="feat-illo" aria-hidden="true">
+                <svg viewBox="0 0 72 58" fill="none" overflow="visible">
+                  <!-- Document -->
+                  <rect x="8" y="6" width="38" height="48" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+                  <rect x="14" y="14" width="26" height="2.5" rx="1" fill="var(--text-3)" opacity=".3"/>
+                  <rect x="14" y="20" width="22" height="2.5" rx="1" fill="var(--text-3)" opacity=".25"/>
+                  <!-- Signature -->
+                  <path d="M14 38 Q18 32 23 37 Q28 42 33 36 Q36 32 39 37" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <!-- Resize handle -->
+                  <rect x="37" y="35" width="5" height="5" rx="1" fill="var(--accent)" opacity=".6"/>
+                  <!-- Tool badge -->
+                  <rect x="50" y="16" width="18" height="9" rx="3" fill="var(--accent)" opacity=".15" stroke="var(--accent)" stroke-width=".75"/>
+                  <text x="59" y="22.5" font-family="IBM Plex Mono" font-size="4" fill="var(--accent)" text-anchor="middle" letter-spacing=".3">SIGN</text>
+                </svg>
+              </div>
+              <div class="feature-new-badge">Cross-tool</div>
+              <h4 class="feature-title">Signature — Draw or Upload</h4>
+              <p class="feature-desc">Available in both the Editor and the Scanner. Draw freehand on a canvas or upload a PNG. Place, drag, resize. The Editor embeds it into the exported PDF; the Scanner bakes it into the scanned effect.</p>
+            </article>
+          </div>
+        </div>
+
+      </section>
+      
+
+      <!-- ══════════════ COMPRESS PDF ══════════════ -->
+      <section class="compress-section" id="compress" aria-label="PDF Compression">
+        <div class="compress-inner">
+          <div class="compress-hd">
+            <span class="section-tag">Free Tool</span>
+            <h2 class="section-h2">Compress your PDF</h2>
+            <p class="compress-sub">Professional-grade compression — preserves vector text and fonts, only recompresses embedded images. Up to 60% smaller with no visible quality loss on the High setting. Small File mode uses smart rasterization for maximum shrink on any PDF type.</p>
+          </div>
+          <div class="compress-card app-card">
+            <div class="card-topbar" aria-hidden="true">
+              <div class="card-dots"><div class="card-dot"></div><div class="card-dot"></div><div class="card-dot"></div></div>
+              <span class="card-title">ScanDrift // compressor</span>
+              <span></span>
+            </div>
+            <div class="card-body">
+              <div class="dropzone" id="cmpDropzone" role="button" tabindex="0" aria-label="Upload PDF to compress">
+                <input type="file" id="cmpInput" accept=".pdf" aria-label="Choose PDF file" />
+                <div class="dz-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" /><polyline points="16 12 12 8 8 12" /><line x1="12" y1="8" x2="12" y2="20" />
+                  </svg>
+                </div>
+                <p class="dz-title">Drop your PDF here</p>
+                <p class="dz-types">PDF only · Max 50 MB</p>
+              </div>
+              <div class="file-bar" id="cmpFileBar" role="status" aria-live="polite">
+                <span class="file-type-badge">PDF</span>
+                <span class="file-name" id="cmpFileName"></span>
+                <span class="file-sz" id="cmpFileSize"></span>
+                <button type="button" class="clear-btn" id="cmpClearBtn" aria-label="Remove file">✕</button>
+              </div>
+              <label class="field-label" id="cmp-preset-lbl">Compression Level</label>
+              <div class="preset-row" role="radiogroup" aria-labelledby="cmp-preset-lbl">
+                <div class="preset-opt"><input type="radio" name="cmpPreset" id="cmp-high" value="high" checked /><label for="cmp-high"><span class="p-name">High Quality</span><span class="p-desc">150 DPI · Good balance</span></label></div>
+                <div class="preset-opt"><input type="radio" name="cmpPreset" id="cmp-medium" value="medium" /><label for="cmp-medium"><span class="p-name">Medium</span><span class="p-desc">100 DPI · Smaller file</span></label></div>
+                <div class="preset-opt"><input type="radio" name="cmpPreset" id="cmp-low" value="low" /><label for="cmp-low"><span class="p-name">Small File</span><span class="p-desc">Rasterize · Max shrink</span></label></div>
+              </div>
+              <button type="button" class="submit-btn" id="cmpSubmitBtn" disabled>
+                <div class="btn-spinner"></div>
+                <span class="btn-label">Compress PDF</span>
+              </button>
+              <div class="progress-wrap" id="cmpProgressWrap" role="status" aria-live="polite" style="display:none">
+                <div class="progress-top">
+                  <span class="progress-label" id="cmpProgressLabel">Compressing…</span>
+                  <span class="progress-pct" id="cmpProgressPct">0%</span>
+                </div>
+                <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                  <div class="progress-fill" id="cmpProgressFill"></div>
+                </div>
+              </div>
+              <div class="compress-result" id="cmpResult">
+                <div class="cmp-stat"><span class="cmp-stat-label">Before</span><span class="cmp-stat-val" id="cmpBefore">—</span></div>
+                <div class="cmp-arrow" aria-hidden="true">→</div>
+                <div class="cmp-stat"><span class="cmp-stat-label">After</span><span class="cmp-stat-val accent" id="cmpAfter">—</span></div>
+                <div class="cmp-saved-badge" id="cmpSavedBadge"></div>
+              </div>
+              <div class="status" id="cmpStatus" role="alert"></div>
             </div>
           </div>
-          <label class="field-label" id="fmt-lbl">Output Format</label>
-          <div class="format-row" role="radiogroup" aria-labelledby="fmt-lbl">
-            <div class="fmt-opt"><input type="radio" name="format" id="f-pdf" value="pdf" checked><label for="f-pdf">📄 PDF</label></div>
-            <div class="fmt-opt" id="fmt-image-wrap"><input type="radio" name="format" id="f-image" value="image"><label for="f-image">🖼 Image</label></div>
-            <div class="fmt-opt"><input type="radio" name="format" id="f-zip" value="zip"><label for="f-zip">🗜 ZIP</label></div>
+        </div>
+      </section>
+
+      <!-- ══════════════ EDITOR ══════════════ -->
+      <section class="editor-section" id="editor" aria-label="PDF Editor">
+        <div class="editor-landing">
+          <div class="editor-hd">
+            <span class="section-tag">Free Tool</span>
+            <h2 class="section-h2">Edit your document</h2>
+            <p class="editor-hd-sub">A full canvas editor built into ScanDrift. Redact sensitive info, annotate, add text and shapes, place stamps, attach a drawn or uploaded signature — then export as a our compression engine-compressed PDF at the original page size.</p>
+            <div class="editor-feature-pills">
+              <span class="editor-pill">Whiteout</span>
+              <span class="editor-pill">Blackout</span>
+              <span class="editor-pill">Highlight</span>
+              <span class="editor-pill">Text</span>
+              <span class="editor-pill">Draw</span>
+              <span class="editor-pill">Shapes</span>
+              <span class="editor-pill">Stamp</span>
+              <span class="editor-pill">Signature</span>
+              <span class="editor-pill">Select &amp; Resize</span>
+              <span class="editor-pill">Undo / Redo</span>
+              <span class="editor-pill">Zoom</span>
+            </div>
           </div>
-          <button type="submit" class="submit-btn" id="submitBtn" disabled>Apply Scan Effect</button>
-          <div class="progress-wrap" id="progressWrap" role="status" aria-live="polite">
-            <div class="progress-top"><span class="progress-label" id="progressLabel">Processing…</span><span class="progress-pct" id="progressPct">0%</span></div>
-            <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="compress-card app-card" style="max-width:620px;width:100%">
+            <div class="card-topbar" aria-hidden="true">
+              <div class="card-dots"><div class="card-dot"></div><div class="card-dot"></div><div class="card-dot"></div></div>
+              <span class="card-title">ScanDrift // editor</span>
+              <span></span>
+            </div>
+            <div class="card-body">
+              <div class="dropzone" id="editorDropzone" role="button" tabindex="0" aria-label="Upload PDF to edit">
+                <input type="file" id="editorInput" accept=".pdf,.jpg,.jpeg,.png,.webp" aria-label="Choose file" />
+                <div class="dz-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" /><polyline points="16 12 12 8 8 12" /><line x1="12" y1="8" x2="12" y2="20" />
+                  </svg>
+                </div>
+                <p class="dz-title">Drop your PDF or image here</p>
+                <p class="dz-types">PDF · JPG · PNG · WEBP · Max 50 MB</p>
+              </div>
+              <div class="file-bar" id="editorFileBar" role="status" aria-live="polite">
+                <span class="file-type-badge">FILE</span>
+                <span class="file-name" id="editorFileName"></span>
+                <span class="file-sz" id="editorFileSz"></span>
+                <button type="button" class="clear-btn" id="editorClearBtn" aria-label="Remove file">✕</button>
+              </div>
+              <button type="button" class="submit-btn" id="editorOpenBtn" disabled>
+                <div class="btn-spinner"></div>
+                <span class="btn-label">Open in Editor</span>
+              </button>
+              <div class="status" id="editorStatus" role="alert"></div>
+            </div>
           </div>
-          <div class="status" id="statusMsg" role="alert"></div>
-        </form>
+        </div>
+      </section>
+
+      <!-- ══════════════ FAQ ══════════════ -->
+      <section class="section" id="faq">
+        <div class="section-hd">
+          <span class="section-tag">FAQ</span>
+          <h2 class="section-h2">Frequently asked questions</h2>
+        </div>
+        <div class="faq-cols">
+          <div>
+            <dl>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">What file types are supported?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">PDF (any page count), JPG, PNG, WEBP, TIFF, and BMP. Images can be returned as their original format or wrapped in a PDF. The compressor and editor accept PDF only.</span></dd>
+              </div>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Is ScanDrift completely free?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">The PDF Compressor and PDF Editor are always free with no page limits and no watermarks. The Scanner gives you the first 3 pages of any document for free. Beyond 3 pages requires a one-time $5 unlock, valid for 10 hours. No subscriptions, no recurring charges.</span></dd>
+              </div>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Are my files sent to any server?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">No. The entire pipeline runs locally locally on your own machine. Files are deleted immediately after processing — nothing stored externally, ever.</span></dd>
+              </div>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Can I use all three tools together?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Absolutely. A common workflow is: edit the document first (redact, annotate, sign), export the edited PDF, apply the scanner effect to make it look physically scanned, then compress the result before sending. Each tool is independent — use any combination in any order.</span></dd>
+              </div>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">What is channel misregistration?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">CCD-bar scanners read the red, green, and blue channels in separate physical passes. Even a fraction of a millimetre of vibration offsets them, producing colour fringing on the edges of dark text against a light background. Enabling this makes budget scanner profiles especially convincing.</span></dd>
+              </div>
+            </dl>
+          </div>
+          <div>
+            <dl>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Is the PDF compressor really free?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes — the compressor has no page limit and no payment required. Upload any PDF up to 50 MB and download the compressed version instantly. The $5 unlock only applies to the scanner tool when processing more than 3 pages.</span></dd>
+              </div>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Is the PDF editor free to use?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes — the editor is completely free with no page limits. Open any PDF or image, annotate it with whiteout, highlights, text, shapes, stamps, or a signature, then export as a compressed PDF. No account, no watermark, no restrictions.</span></dd>
+              </div>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Why does text stay sharp unlike real scans?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Grain is applied only to pixels above a luma brightness threshold — paper background only. Ink and text pixels are skipped entirely, keeping letters crisp.</span></dd>
+              </div>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">When should I use Moiré Pattern?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Only when your source document is or should appear to be a printed halftone — magazines, newspapers, offset-printed books. The effect is wrong for plain text documents. The "Magazine / Print Scan" scanner model enables it automatically.</span></dd>
+              </div>
+              <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Does it work on Windows?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
+                <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes. The scanner and editor work on Windows, macOS, and Linux with the local server. The PDF compressor requires our compression engine to be installed separately (available free from the official compression engine site). The scanner and editor use our rendering pipeline, which installs automatically and needs no extra software.</span></dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ FOOTER ══════════════ -->
+      <footer class="site-footer" role="contentinfo">
+        <div class="footer-brand">
+          <div class="footer-logo" aria-hidden="true">
+            <svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="1.5" /><rect x="2" y="5.5" width="8" height="1.5" /><rect x="2" y="9" width="10" height="1.5" /><rect x="2" y="12.5" width="6" height="1.5" /></svg>
+          </div>
+          <p class="footer-copy">© 2026 ScanDrift · PDF Scanner · Compressor · Editor · No cloud · No signup</p>
+        </div>
+        <nav class="footer-right" aria-label="Footer navigation">
+          <a href="#tools">Tools</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#compress">Compress</a>
+          <a href="#editor">Edit</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+      </footer>
+
+      <!-- ══════════════ SIGNATURE MODAL ══════════════ -->
+      <div class="sig-modal-backdrop" id="sigModalBackdrop" role="dialog" aria-modal="true" aria-label="Signature placement">
+        <div class="sig-modal">
+          <div class="sig-modal-header">
+            <span>Place Signature</span>
+            <button class="sig-modal-close" id="sigModalClose" aria-label="Close">✕</button>
+          </div>
+          <div class="sig-modal-body">
+            <div class="sig-create-panel">
+              <div class="sig-tabs" role="tablist">
+                <button class="sig-tab active" id="tabDraw" role="tab" aria-selected="true">✏ Draw</button>
+                <button class="sig-tab" id="tabUpload" role="tab" aria-selected="false">↑ Upload</button>
+              </div>
+              <div id="panelDraw">
+                <div class="sig-canvas-wrap">
+                  <canvas id="sigCanvas" width="360" height="150" aria-label="Draw your signature"></canvas>
+                  <span class="sig-canvas-hint">Sign here</span>
+                </div>
+                <div class="sig-draw-controls">
+                  <div class="sig-colors" role="radiogroup" aria-label="Ink color">
+                    <label class="sig-color-opt" title="Black"><input type="radio" name="sigColor" value="#0a0a0a" checked /><span style="background:#0a0a0a"></span></label>
+                    <label class="sig-color-opt" title="Blue ink"><input type="radio" name="sigColor" value="#1a3a8f" /><span style="background:#1a3a8f"></span></label>
+                    <label class="sig-color-opt" title="Dark red"><input type="radio" name="sigColor" value="#7f1d1d" /><span style="background:#7f1d1d"></span></label>
+                  </div>
+                  <button type="button" class="sig-clear-btn" id="clearSigBtn">Clear</button>
+                </div>
+              </div>
+              <div id="panelUpload" style="display:none">
+                <div class="sig-upload-zone" id="sigUploadZone" role="button" tabindex="0">
+                  <input type="file" id="sigFileInput" accept="image/png,image/jpeg,image/webp" style="display:none" />
+                  <p>Click to upload signature</p>
+                  <p class="sig-upload-hint">PNG with transparent background works best</p>
+                </div>
+                <img id="sigUploadPreview" style="display:none;max-width:100%;max-height:140px;margin-top:8px;border-radius:4px" alt="Uploaded signature" />
+              </div>
+              <div class="sig-page-row">
+                <label class="field-lbl" for="sigPageSelect">Apply to</label>
+                <select id="sigPageSelect">
+                  <option value="last">Last page</option>
+                  <option value="all">All pages</option>
+                  <option value="1">Page 1 only</option>
+                </select>
+              </div>
+            </div>
+            <div class="sig-position-panel">
+              <p class="sig-position-label">Drag to position · Corner to resize</p>
+              <div class="sig-preview-container" id="sigPreviewContainer">
+                <img id="sigPageThumb" alt="Document page preview" style="display:none" />
+                <div id="sigOverlay" class="sig-overlay" style="display:none">
+                  <span class="sig-angle-badge" id="sigAngleBadge">0°</span>
+                  <div class="sig-rotate-stem"></div>
+                  <div class="sig-rotate-handle" id="sigRotateHandle" title="Drag to rotate">↻</div>
+                  <img id="sigOverlayImg" alt="Signature overlay" />
+                  <div class="sig-resize-handle" id="sigResizeHandle"></div>
+                </div>
+                <div class="sig-preview-placeholder" id="sigPreviewPlaceholder">
+                  <span>Upload a document first<br />to position the signature</span>
+                </div>
+              </div>
+              <p class="sig-drag-hint">← Drag the signature · Resize from corner →</p>
+            </div>
+          </div>
+          <div class="sig-modal-footer">
+            <button type="button" class="sig-cancel-btn" id="sigCancelBtn">Cancel</button>
+            <button type="button" class="sig-confirm-btn" id="sigConfirmBtn">Confirm Position</button>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
 
-
-
-<!-- ══════════════ STATS BAND ══════════════ -->
-<div class="stats-band" aria-label="Key statistics">
-  <div class="stat-cell"><span class="stat-num">300</span><span class="stat-label">DPI output</span></div>
-  <div class="stat-cell"><span class="stat-num">0</span><span class="stat-label">Files uploaded</span></div>
-  <div class="stat-cell"><span class="stat-num">∞</span><span class="stat-label">Pages free</span></div>
-  <div class="stat-cell"><span class="stat-num">6+</span><span class="stat-label">File formats</span></div>
-</div>
-
-<!-- ══════════════ FEATURES ══════════════ -->
-<section class="features" id="features" aria-label="Features">
-
-  <!-- 01: Crisp text -->
-  <article class="feature-cell">
-    <div class="feat-illo" aria-hidden="true">
-      <svg viewBox="0 0 72 58" fill="none" overflow="visible">
-        <!-- Document backing -->
-        <rect x="2" y="6" width="52" height="46" rx="3" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
-        <!-- Blurry text lines (before) -->
-        <rect x="8" y="14" width="28" height="4" rx="2" fill="var(--text-3)" opacity=".4" filter="url(#ff-blur)"/>
-        <rect x="8" y="22" width="40" height="2.5" rx="1.5" fill="var(--text-3)" opacity=".2" filter="url(#ff-blur)"/>
-        <rect x="8" y="28" width="35" height="2.5" rx="1.5" fill="var(--text-3)" opacity=".2" filter="url(#ff-blur)"/>
-        <rect x="8" y="34" width="38" height="2.5" rx="1.5" fill="var(--text-3)" opacity=".2" filter="url(#ff-blur)"/>
-        <defs>
-          <filter id="ff-blur"><feGaussianBlur stdDeviation="1.2"/></filter>
-          <filter id="ff-led"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        </defs>
-        <!-- Magnifier -->
-        <circle cx="50" cy="36" r="16" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.8"/>
-        <circle cx="50" cy="36" r="16" fill="var(--bg)" opacity=".88"/>
-        <!-- Sharp text inside magnifier -->
-        <rect x="40" y="29" width="20" height="3.5" rx=".8" fill="var(--text-2)" opacity=".8"/>
-        <rect x="40" y="36" width="16" height="3.5" rx=".8" fill="var(--text-2)" opacity=".75"/>
-        <!-- Magnifier handle -->
-        <line x1="62" y1="48" x2="70" y2="56" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round"/>
-        <!-- Lens shine -->
-        <ellipse cx="44" cy="30" rx="3.5" ry="2" fill="rgba(255,255,255,.2)" transform="rotate(-15 44 30)"/>
-        <!-- LED dot -->
-        <circle cx="50" cy="36" r="1.5" fill="var(--accent)" opacity=".5" filter="url(#ff-led)"/>
-      </svg>
-    </div>
-    <span class="feature-num">01</span>
-    <h2 class="feature-title">Crisp Text Preservation</h2>
-    <p class="feature-desc">Grain applies only to bright background pixels — ink stays clean. Letters remain razor sharp at any zoom level, always.</p>
-  </article>
-
-  <!-- 02: Privacy -->
-  <article class="feature-cell">
-    <div class="feat-illo" aria-hidden="true">
-      <svg viewBox="0 0 72 58" fill="none" overflow="visible">
-        <defs>
-          <filter id="ff-shld"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        </defs>
-        <!-- Shield outer glow -->
-        <path d="M36 4 L58 15 L58 33 Q58 50 36 56 Q14 50 14 33 L14 15 Z" fill="var(--accent)" opacity=".07" filter="url(#ff-shld)"/>
-        <!-- Shield body -->
-        <path d="M36 4 L58 15 L58 33 Q58 50 36 56 Q14 50 14 33 L14 15 Z" fill="var(--surface-2)" stroke="var(--accent)" stroke-width="1.4"/>
-        <!-- Shield inner fill -->
-        <path d="M36 8 L54 18 L54 33 Q54 47 36 52 Q18 47 18 33 L18 18 Z" fill="var(--accent)" opacity=".06"/>
-        <!-- Lock body -->
-        <rect x="27" y="30" width="18" height="14" rx="2.5" fill="var(--accent)" opacity=".75"/>
-        <!-- Lock shackle -->
-        <path d="M30 30 L30 24.5 Q30 19 36 19 Q42 19 42 24.5 L42 30" stroke="var(--accent)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-        <!-- Keyhole -->
-        <circle cx="36" cy="36.5" r="2.5" fill="var(--bg)"/>
-        <rect x="34.8" y="36.5" width="2.4" height="4" rx=".5" fill="var(--bg)"/>
-        <!-- "LOCAL" text -->
-        <text x="36" y="54" font-family="IBM Plex Mono" font-size="5.5" fill="var(--accent)" text-anchor="middle" opacity=".7" letter-spacing="1">LOCAL</text>
-      </svg>
-    </div>
-    <span class="feature-num">02</span>
-    <h2 class="feature-title">Completely Private</h2>
-    <p class="feature-desc">100% local. Your files never leave your machine. Nothing stored on any server, ever. Close the tab and it's gone.</p>
-  </article>
-
-  <!-- 03: Auto deskew -->
-  <article class="feature-cell">
-    <div class="feat-illo" aria-hidden="true">
-      <svg viewBox="0 0 72 58" fill="none" overflow="visible">
-        <!-- Tilted before-doc -->
-        <g transform="rotate(11, 20, 32)" opacity=".38">
-          <rect x="4" y="10" width="30" height="40" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
-          <rect x="8" y="16" width="22" height="2.5" rx="1" fill="var(--text-3)" opacity=".5"/>
-          <rect x="8" y="22" width="18" height="2" rx="1" fill="var(--text-3)" opacity=".35"/>
-          <rect x="8" y="27" width="20" height="2" rx="1" fill="var(--text-3)" opacity=".38"/>
-          <rect x="8" y="32" width="15" height="2" rx="1" fill="var(--text-3)" opacity=".3"/>
-        </g>
-        <!-- Straight after-doc -->
-        <rect x="38" y="4" width="30" height="42" rx="2" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.4"/>
-        <rect x="43" y="11" width="20" height="3" rx="1" fill="var(--text-2)" opacity=".7"/>
-        <rect x="43" y="18" width="17" height="2" rx="1" fill="var(--text-3)" opacity=".42"/>
-        <rect x="43" y="23" width="19" height="2" rx="1" fill="var(--text-3)" opacity=".42"/>
-        <rect x="43" y="28" width="15" height="2" rx="1" fill="var(--text-3)" opacity=".38"/>
-        <rect x="43" y="33" width="18" height="2" rx="1" fill="var(--text-3)" opacity=".4"/>
-        <!-- Arc correction arrow -->
-        <path d="M33 26 Q35 14 40 10" stroke="var(--accent)" stroke-width="1.6" fill="none" stroke-dasharray="2.5 2" stroke-linecap="round"/>
-        <polygon points="38,7 42,11 36,13" fill="var(--accent)"/>
-        <!-- Angle marks -->
-        <line x1="5" y1="52" x2="14" y2="52" stroke="var(--text-3)" stroke-width="1" opacity=".3"/>
-        <line x1="5" y1="52" x2="5" y2="44" stroke="var(--text-3)" stroke-width="1" opacity=".3"/>
-        <text x="7" y="51" font-family="IBM Plex Mono" font-size="4.5" fill="var(--text-3)" opacity=".45">±10°</text>
-      </svg>
-    </div>
-    <span class="feature-num">03</span>
-    <h2 class="feature-title">Auto Deskew</h2>
-    <p class="feature-desc">Projection-profile algorithm detects and corrects tilt up to ±10°, simulating real-world scanner misalignment.</p>
-  </article>
-
-  <!-- 04: Lossless PNG -->
-  <article class="feature-cell">
-    <div class="feat-illo" aria-hidden="true">
-      <svg viewBox="0 0 72 58" fill="none" overflow="visible">
-        <!-- Back doc -->
-        <g transform="rotate(-5 36 34)">
-          <rect x="10" y="12" width="38" height="48" rx="2" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
-        </g>
-        <!-- Front doc -->
-        <rect x="16" y="5" width="38" height="48" rx="2" fill="var(--surface)" stroke="var(--border-mid)" stroke-width="1"/>
-        <rect x="22" y="12" width="26" height="3" rx="1" fill="var(--text-2)" opacity=".65"/>
-        <rect x="22" y="19" width="21" height="2" rx="1" fill="var(--text-3)" opacity=".38"/>
-        <rect x="22" y="24" width="24" height="2" rx="1" fill="var(--text-3)" opacity=".38"/>
-        <rect x="22" y="29" width="19" height="2" rx="1" fill="var(--text-3)" opacity=".34"/>
-        <rect x="22" y="34" width="22" height="2" rx="1" fill="var(--text-3)" opacity=".36"/>
-        <!-- PNG badge -->
-        <rect x="22" y="42" width="22" height="10" rx="2" fill="var(--accent)" opacity=".13" stroke="var(--accent)" stroke-width=".75" stroke-opacity=".4"/>
-        <text x="29" y="49.5" font-family="IBM Plex Mono" font-size="6.5" fill="var(--accent)" font-weight="600">PNG</text>
-        <!-- Check badge -->
-        <circle cx="59" cy="16" r="10" fill="var(--accent)" opacity=".12"/>
-        <circle cx="59" cy="16" r="10" stroke="var(--accent)" stroke-width="1.4"/>
-        <polyline points="53.5,16 57.5,20 65,10" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- "LOSSLESS" label -->
-        <text x="35" y="57" font-family="IBM Plex Mono" font-size="4.5" fill="var(--text-3)" text-anchor="middle" opacity=".45" letter-spacing=".5">LOSSLESS</text>
-      </svg>
-    </div>
-    <span class="feature-num">04</span>
-    <h2 class="feature-title">Lossless PNG Output</h2>
-    <p class="feature-desc">Pages embed as PNG, not JPEG — zero DCT artifacts on text edges. True A4 dimensions, 300 DPI default.</p>
-  </article>
-</section>
-
-<!-- ══════════════ HOW IT WORKS ══════════════ -->
-<section class="section" id="how-it-works">
-  <div class="section-hd">
-    <span class="section-tag">Process</span>
-    <h2 class="section-h2">Three steps to a scanned document</h2>
-  </div>
-  <div class="steps-grid">
-
-    <div class="step">
-      <span class="step-num-bg" aria-hidden="true">1</span>
-      <div class="step-illo" aria-hidden="true">
-        <svg viewBox="0 0 68 52" fill="none" overflow="visible">
-          <!-- Device frame -->
-          <rect x="8" y="14" width="52" height="34" rx="4" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1.2"/>
-          <rect x="8" y="14" width="52" height="9"  rx="4" fill="var(--surface)"   stroke="var(--border-mid)" stroke-width="1.2"/>
-          <circle cx="17" cy="18.5" r="2" fill="var(--text-3)" opacity=".45"/>
-          <circle cx="24" cy="18.5" r="2" fill="var(--text-3)" opacity=".45"/>
-          <circle cx="31" cy="18.5" r="2" fill="var(--text-3)" opacity=".45"/>
-          <!-- Dashed drop zone -->
-          <rect x="18" y="28" width="32" height="16" rx="2.5" fill="var(--accent)" opacity=".07" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2.5 2"/>
-          <!-- Upload arrow -->
-          <line x1="34" y1="27" x2="34" y2="41" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
-          <polyline points="29,31 34,26 39,31" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <!-- Base stand -->
-          <rect x="0"  y="48" width="68" height="2" rx="1" fill="var(--border-mid)"/>
-          <rect x="22" y="44" width="24" height="6" rx="1.5" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1"/>
+      <!-- ══════════════ WHATSAPP BUTTON ══════════════ -->
+      <a class="wa-fab" href="https://wa.me/79688920221?text=Hi%2C%20I'm%20interested%20in%20ScanDrift" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.554 4.118 1.522 5.851L.057 23.057a.75.75 0 00.906.932l5.337-1.492A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.693 9.693 0 01-4.932-1.347l-.353-.21-3.664 1.025 1.002-3.564-.23-.368A9.693 9.693 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z" />
         </svg>
+        <span class="wa-label">Chat with us</span>
+      </a>
+
+      <!-- ══════════════ PAYMENT GATE MODAL ══════════════ -->
+      <div class="pay-modal-backdrop" id="payModalBackdrop" role="dialog" aria-modal="true" aria-label="Unlock large document processing" style="display:none">
+        <div class="pay-modal">
+          <div class="pay-modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="14" width="40" height="26" rx="5" fill="var(--accent)" opacity=".12" stroke="var(--accent)" stroke-width="1.5" />
+              <rect x="4" y="21" width="40" height="6" fill="var(--accent)" opacity=".18" />
+              <rect x="10" y="30" width="10" height="4" rx="2" fill="var(--accent)" opacity=".5" />
+              <rect x="24" y="30" width="6" height="4" rx="2" fill="var(--accent)" opacity=".35" />
+              <circle cx="36" cy="10" r="8" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.5" />
+              <text x="36" y="14" font-family="IBM Plex Mono" font-size="9" font-weight="600" fill="var(--accent)" text-anchor="middle">$</text>
+            </svg>
+          </div>
+          <h2 class="pay-modal-title">Unlock unlimited scanner pages</h2>
+          <p class="pay-modal-desc">Your document has <strong id="payPageCount">0</strong> pages. Processing beyond 3 pages requires a one-time <strong>$5 unlock</strong> — valid for 10 hours, no account needed. The compressor and editor remain free.</p>
+          <div class="pay-features">
+            <div class="pay-feature"><span class="pay-check">✓</span> All <strong id="payPageCountB">0</strong> pages processed at full quality</div>
+            <div class="pay-feature"><span class="pay-check">✓</span> Every effect layer applied to every page</div>
+            <div class="pay-feature"><span class="pay-check">✓</span> Instant download when done</div>
+            <div class="pay-feature"><span class="pay-check">✓</span> Still 100% private — no upload, no storage</div>
+          </div>
+          <button class="pay-btn" id="payBtn"><span id="payBtnLabel">Pay $5 and process</span></button>
+          <p class="pay-or">— or —</p>
+          <button class="pay-free-btn" id="payFreeBtn">Process first 3 pages only (free)</button>
+          <button class="pay-close" id="payClose" aria-label="Close">✕</button>
+        </div>
       </div>
-      <h3 class="step-title">Upload your file</h3>
-      <p class="step-desc">Drop any PDF or image — JPG, PNG, WEBP, TIFF, BMP — up to 50 MB. Multi-page PDFs are handled page by page in parallel.</p>
-    </div>
 
-    <div class="step">
-      <span class="step-num-bg" aria-hidden="true">2</span>
-      <div class="step-illo" aria-hidden="true">
-        <svg viewBox="0 0 68 52" fill="none" overflow="visible">
-          <!-- Circular dial -->
-          <circle cx="34" cy="26" r="22" fill="var(--surface-2)" stroke="var(--border-mid)" stroke-width="1.2"/>
-          <!-- Tick marks at 12, 2, 4, 6, 8, 10 o'clock -->
-          <line x1="34" y1="5.5"  x2="34" y2="10"   stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>
-          <line x1="48.5" y1="11" x2="45.5" y2="14.5" stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>
-          <line x1="54.5" y1="26" x2="50"   y2="26"   stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>
-          <line x1="19.5" y1="11" x2="22.5" y2="14.5" stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>
-          <line x1="13.5" y1="26" x2="18"   y2="26"   stroke="var(--text-3)" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>
-          <!-- Inner knob -->
-          <circle cx="34" cy="26" r="11" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.4"/>
-          <!-- Pointer — pointing to 2 o'clock (medium) -->
-          <line x1="34" y1="26" x2="41" y2="17" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
-          <circle cx="34" cy="26" r="3" fill="var(--accent)"/>
-          <!-- Labels -->
-          <text x="16"  y="44" font-family="IBM Plex Mono" font-size="4.5" fill="var(--text-3)" opacity=".45">LT</text>
-          <text x="30"  y="44" font-family="IBM Plex Mono" font-size="4.5" fill="var(--accent)">MED</text>
-          <text x="48"  y="44" font-family="IBM Plex Mono" font-size="4.5" fill="var(--text-3)" opacity=".45">HV</text>
-        </svg>
+      <!-- ══════════════ SUCCESS SPLASH ══════════════ -->
+      <div class="success-splash" id="successSplash" role="dialog" aria-modal="true" aria-label="Payment successful" style="display:none">
+        <div class="success-splash-inner">
+          <div class="success-confetti" id="successConfetti" aria-hidden="true"></div>
+          <div class="success-check-wrap" aria-hidden="true">
+            <svg class="success-check-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle class="success-check-circle" cx="40" cy="40" r="36" stroke="var(--accent)" stroke-width="3" fill="none" />
+              <polyline class="success-check-tick" points="22,41 34,53 58,27" stroke="var(--accent)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <h2 class="success-title">You're unlocked! 🎉</h2>
+          <p class="success-subtitle">Payment confirmed · Valid for <strong>10 hours</strong> · Stored in your browser</p>
+          <div class="success-perks">
+            <div class="success-perk"><span class="success-perk-icon">∞</span><div><strong>Unlimited pages</strong><span>Process any PDF or batch — no cap</span></div></div>
+            <div class="success-perk"><span class="success-perk-icon">🔒</span><div><strong>Stays unlocked for 10 hours</strong><span>Saved in your browser — come back, still active</span></div></div>
+            <div class="success-perk"><span class="success-perk-icon">⚡</span><div><strong>All 14+ effects available</strong><span>Full quality, every page, every effect</span></div></div>
+          </div>
+          <div class="success-steps">
+            <p class="success-steps-label">What to do next:</p>
+            <ol class="success-step-list">
+              <li>Drop your PDF or images into the upload zone</li>
+              <li>Choose a scanner preset or fine-tune the effects</li>
+              <li>Click <strong>Apply Scan Effect</strong> — your file downloads instantly</li>
+            </ol>
+          </div>
+          <button class="success-cta" id="successCta">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 6a1 1 0 011-1h6a1 1 0 010 2H4a1 1 0 01-1-1z" /></svg>
+            Start Scanning
+          </button>
+          <p class="success-note">Need help? <a href="https://wa.me/79688920221?text=Hi%2C%20I%20just%20paid%20for%20ScanDrift%20and%20need%20help" target="_blank" rel="noopener">Chat with us on WhatsApp</a></p>
+        </div>
       </div>
-      <h3 class="step-title">Choose your preset</h3>
-      <p class="step-desc">Pick Light, Medium, or Heavy — or open the advanced panel to fine-tune grain, tint, brightness, contrast, rotation, and more.</p>
-    </div>
 
-    <div class="step">
-      <span class="step-num-bg" aria-hidden="true">3</span>
-      <div class="step-illo" aria-hidden="true">
-        <svg viewBox="0 0 68 52" fill="none" overflow="visible">
-          <!-- Document with scan texture -->
-          <rect x="16" y="2" width="36" height="46" rx="3" fill="var(--surface)" stroke="var(--border-mid)" stroke-width="1.2"/>
-          <!-- Warm paper overlay -->
-          <rect x="16" y="2" width="36" height="46" rx="3" fill="rgba(180,140,60,0.04)"/>
-          <rect x="22" y="9"  width="24" height="3"   rx="1" fill="var(--text-2)" opacity=".6"/>
-          <rect x="22" y="15" width="20" height="2"   rx="1" fill="var(--text-3)" opacity=".3"/>
-          <rect x="22" y="20" width="22" height="2"   rx="1" fill="var(--text-3)" opacity=".3"/>
-          <rect x="22" y="25" width="17" height="2"   rx="1" fill="var(--text-3)" opacity=".27"/>
-          <rect x="22" y="30" width="21" height="2"   rx="1" fill="var(--text-3)" opacity=".3"/>
-          <rect x="22" y="35" width="15" height="2"   rx="1" fill="var(--text-3)" opacity=".26"/>
-          <!-- Download arrow + base -->
-          <line x1="34" y1="44" x2="34" y2="56" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
-          <polyline points="28,51 34,57 40,51" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="25"  y1="58" x2="43" y2="58" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
-          <!-- Success confetti -->
-          <circle cx="10" cy="10" r="2"   fill="var(--accent)"   opacity=".55"/>
-          <circle cx="58" cy="8"  r="1.5" fill="var(--green)"    opacity=".5"/>
-          <circle cx="8"  cy="34" r="1.2" fill="var(--accent-2)" opacity=".45"/>
-          <circle cx="60" cy="38" r="2"   fill="var(--accent)"   opacity=".38"/>
-          <circle cx="62" cy="16" r="1"   fill="var(--green)"    opacity=".4"/>
-        </svg>
+      <!-- ══════════════ EDITOR MODAL ══════════════ -->
+      <div class="editor-modal-backdrop" id="editorModal" role="dialog" aria-modal="true" aria-label="PDF Editor">
+        <div class="editor-modal">
+          <div class="editor-header">
+            <div class="editor-header-left">
+              <span class="editor-logo-mark">SCANDRIFT</span>
+              <span class="editor-filename" id="editorFilename">document.pdf</span>
+            </div>
+            <div class="editor-header-center">
+              <button class="editor-zoom-btn" id="editorZoomOut" title="Zoom out (Ctrl −)">−</button>
+              <span class="editor-zoom-label" id="editorZoomLabel">100%</span>
+              <button class="editor-zoom-btn" id="editorZoomIn" title="Zoom in (Ctrl +)">+</button>
+              <button class="editor-zoom-btn" id="editorZoomReset" title="Reset zoom (Ctrl 0)" style="width:auto;padding:0 8px;font-size:0.65rem;letter-spacing:0.05em;">FIT</button>
+            </div>
+            <div class="editor-header-right">
+              <button class="editor-export-btn" id="editorExportBtn">↓ Export PDF</button>
+              <button class="editor-close-btn" id="editorCloseBtn" aria-label="Close editor">✕</button>
+            </div>
+          </div>
+          <div class="editor-body">
+            <div class="editor-toolbar" role="toolbar" aria-label="Editing tools">
+              <span class="toolbar-section-label">Cover</span>
+              <button class="editor-tool-btn active" data-tool="whiteout" title="Whiteout (W)"><span class="editor-tool-icon">◻</span><span>Whiteout</span><span class="editor-tool-key">W</span></button>
+              <button class="editor-tool-btn" data-tool="blackout" title="Blackout (B)"><span class="editor-tool-icon">◼</span><span>Blackout</span><span class="editor-tool-key">B</span></button>
+              <div class="toolbar-divider"></div>
+              <span class="toolbar-section-label">Annotate</span>
+              <button class="editor-tool-btn" data-tool="highlight" title="Highlight (H)"><span class="editor-tool-icon">▬</span><span>Highlight</span><span class="editor-tool-key">H</span></button>
+              <button class="editor-tool-btn" data-tool="rect-outline" title="Rectangle (R)"><span class="editor-tool-icon">▭</span><span>Rectangle</span><span class="editor-tool-key">R</span></button>
+              <button class="editor-tool-btn" data-tool="circle" title="Circle (C)"><span class="editor-tool-icon">○</span><span>Circle</span><span class="editor-tool-key">C</span></button>
+              <button class="editor-tool-btn" data-tool="arrow" title="Arrow (A)"><span class="editor-tool-icon">→</span><span>Arrow</span><span class="editor-tool-key">A</span></button>
+              <button class="editor-tool-btn" data-tool="line" title="Line (L)"><span class="editor-tool-icon">╱</span><span>Line</span><span class="editor-tool-key">L</span></button>
+              <button class="editor-tool-btn" data-tool="text" title="Text (T)"><span class="editor-tool-icon">T</span><span>Text</span><span class="editor-tool-key">T</span></button>
+              <button class="editor-tool-btn" data-tool="pen" title="Draw (P)"><span class="editor-tool-icon">✏</span><span>Draw</span><span class="editor-tool-key">P</span></button>
+              <button class="editor-tool-btn" data-tool="stamp" title="Stamp (S)"><span class="editor-tool-icon">⬡</span><span>Stamp</span><span class="editor-tool-key">S</span></button>
+              <div class="toolbar-divider"></div>
+              <span class="toolbar-section-label">Edit</span>
+              <button class="editor-tool-btn" data-tool="select" title="Select &amp; move (V)"><span class="editor-tool-icon">⊹</span><span>Select</span><span class="editor-tool-key">V</span></button>
+              <button class="editor-tool-btn" data-tool="eraser" title="Eraser (E)"><span class="editor-tool-icon">⌫</span><span>Eraser</span><span class="editor-tool-key">E</span></button>
+              <div class="toolbar-divider"></div>
+              <span class="toolbar-section-label">Signature</span>
+              <button class="editor-tool-btn" id="editorSigBtn" title="Add Signature"><span class="editor-tool-icon">✍</span><span>Signature</span></button>
+              <div class="toolbar-divider"></div>
+              <div class="editor-tool-opts">
+                <div class="tool-opt-row" id="editorColorRow"><label for="editorColor">Color</label><input type="color" id="editorColor" value="#000000"></div>
+                <div id="editorFontRow" style="display:none;">
+                  <div class="tool-opt-row"><label for="editorFontFamily">Font</label><select id="editorFontFamily"><option value="sans-serif">Sans</option><option value="serif">Serif</option><option value="monospace">Mono</option><option value="Georgia">Georgia</option><option value="Arial">Arial</option><option value="Times New Roman">Times</option></select></div>
+                  <div class="tool-opt-row" style="margin-top:0.35rem;"><label for="editorFontSize">Size</label><select id="editorFontSize"><option value="10">10</option><option value="12">12</option><option value="14">14</option><option value="16">16</option><option value="20" selected>20</option><option value="24">24</option><option value="30">30</option><option value="36">36</option><option value="48">48</option></select></div>
+                  <div class="font-check-row" style="margin-top:0.35rem;"><label class="font-check-label"><input type="checkbox" id="editorBold"> <strong>B</strong></label><label class="font-check-label"><input type="checkbox" id="editorItalic"> <em>I</em></label></div>
+                </div>
+                <div class="tool-opt-row" id="editorWidthRow" style="display:none;"><label for="editorLineWidth">Width</label><select id="editorLineWidth"><option value="1">Thin</option><option value="2">Fine</option><option value="3" selected>Normal</option><option value="5">Thick</option><option value="8">Heavy</option><option value="12">Bold</option></select></div>
+                <div class="tool-opt-row" id="editorStampRow" style="display:none;"><label for="editorStampType">Stamp</label><select id="editorStampType"><option value="APPROVED">APPROVED</option><option value="DRAFT">DRAFT</option><option value="CONFIDENTIAL">CONFIDENTIAL</option><option value="REJECTED">REJECTED</option><option value="REVIEWED">REVIEWED</option><option value="PAID">PAID</option><option value="VOID">VOID</option><option value="COPY">COPY</option></select></div>
+              </div>
+              <div class="toolbar-divider"></div>
+              <div class="editor-history-btns">
+                <button class="editor-history-btn" id="editorUndo" title="Undo (Ctrl+Z)">↩ Undo</button>
+                <button class="editor-history-btn" id="editorRedo" title="Redo (Ctrl+Y)">↪ Redo</button>
+              </div>
+            </div>
+            <div class="editor-canvas-area" id="editorCanvasArea">
+              <div class="editor-loading" id="editorLoading">
+                <div class="editor-loading-spinner"></div>
+                <span id="editorLoadingTxt">Rendering pages…</span>
+              </div>
+              <div class="editor-canvas-scroll" id="editorCanvasScroll">
+                <canvas id="editorCanvas" aria-label="Document editing canvas"></canvas>
+              </div>
+            </div>
+            <div class="editor-thumb-sidebar" id="editorThumbSidebar"></div>
+          </div>
+          <div class="editor-footer">
+            <button class="editor-nav-btn" id="editorPrevPage" aria-label="Previous page" disabled>←</button>
+            <span class="editor-page-info" id="editorPageInfo">—</span>
+            <button class="editor-nav-btn" id="editorNextPage" aria-label="Next page" disabled>→</button>
+          </div>
+        </div>
       </div>
-      <h3 class="step-title">Download instantly</h3>
-      <p class="step-desc">Receive a PDF, original image, or ZIP of PNGs — with warmth, grain, vignette, and sensor jitter baked in.</p>
-    </div>
-  </div>
-</section>
 
-<!-- ══════════════ FAQ ══════════════ -->
-<section class="section" id="faq">
-  <div class="section-hd">
-    <span class="section-tag">FAQ</span>
-    <h2 class="section-h2">Frequently asked questions</h2>
-  </div>
-  <div class="faq-cols">
-    <div>
-      <dl>
-        <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-          <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">What file types are supported?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-          <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">PDF (any page count), JPG, PNG, WEBP, TIFF, and BMP. Images can be returned as their original format or wrapped in a PDF.</span></dd>
+      <!-- ══════════════ EDITOR SIGNATURE MODAL ══════════════ -->
+      <div class="editor-sig-modal-backdrop" id="editorSigModal" role="dialog" aria-modal="true" style="display:none;">
+        <div class="editor-sig-modal">
+          <div class="editor-sig-modal-header">
+            <span>Add Signature</span>
+            <button id="editorSigModalClose" aria-label="Close" style="background:none;border:none;color:var(--text-2);cursor:pointer;font-size:1rem;">✕</button>
+          </div>
+          <div class="sig-tabs" role="tablist" style="display:flex;gap:0.5rem;padding:0.75rem 1rem 0;">
+            <button class="sig-tab active" id="editorSigTabDraw" role="tab">✏ Draw</button>
+            <button class="sig-tab" id="editorSigTabUpload" role="tab">↑ Upload</button>
+          </div>
+          <div id="editorSigPanelDraw" style="padding:0.75rem 1rem;">
+            <div class="sig-canvas-wrap">
+              <canvas id="editorSigCanvas" width="360" height="140" aria-label="Draw signature" style="width:100%;border:1px solid var(--border-mid);border-radius:6px;background:#fff;touch-action:none;display:block;"></canvas>
+            </div>
+            <button id="editorSigClearBtn" style="margin-top:0.5rem;background:var(--surface-2);border:1px solid var(--border-mid);border-radius:5px;color:var(--text-2);cursor:pointer;padding:0.3rem 0.8rem;font-size:0.78rem;">Clear</button>
+          </div>
+          <div id="editorSigPanelUpload" style="display:none;padding:0.75rem 1rem;">
+            <div id="editorSigUploadZone" role="button" tabindex="0" style="border:2px dashed var(--border-mid);border-radius:8px;padding:1.5rem;text-align:center;cursor:pointer;color:var(--text-3);font-size:0.85rem;">
+              <input type="file" id="editorSigFileInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+              Click to upload signature image<br>
+              <small style="opacity:0.6;">PNG with transparent background works best</small>
+            </div>
+            <img id="editorSigUploadPreview" style="display:none;max-width:100%;max-height:120px;margin-top:0.5rem;border-radius:4px;" alt="Signature preview">
+          </div>
+          <div style="display:flex;gap:0.75rem;padding:0.75rem 1rem 1rem;justify-content:flex-end;">
+            <button onclick="document.getElementById('editorSigModal').style.display='none'" style="background:var(--surface-2);border:1px solid var(--border-mid);border-radius:6px;color:var(--text-2);cursor:pointer;padding:0.45rem 1rem;font-size:0.8rem;">Cancel</button>
+            <button id="editorSigConfirm" style="background:var(--accent);border:none;border-radius:6px;color:#fff;cursor:pointer;padding:0.45rem 1.1rem;font-size:0.8rem;font-weight:600;">Place Signature</button>
+          </div>
         </div>
-        <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-          <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Is ScanDrift completely free?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-          <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes. No page limits, no watermarks, no account. There is no premium tier — it's free forever.</span></dd>
-        </div>
-        <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-          <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Are my files sent to any server?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-          <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">No. The entire pipeline runs locally via Node.js. Files are deleted immediately after processing — nothing stored externally.</span></dd>
-        </div>
-      </dl>
-    </div>
-    <div>
-      <dl>
-        <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-          <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Why does text stay sharp unlike real scans?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-          <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Grain is applied only to pixels above a luma brightness threshold — paper background only. Ink and text pixels are skipped entirely, keeping letters crisp.</span></dd>
-        </div>
-        <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-          <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">Does it work on Windows?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-          <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes. No Ghostscript, Poppler, or ImageMagick required. Works on Windows, macOS, and Linux with only Node.js 18+.</span></dd>
-        </div>
-        <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-          <dt><button class="faq-q" aria-expanded="false"><span class="faq-q-text" itemprop="name">What does "lossless PNG output" mean?</span><span class="faq-icon" aria-hidden="true">+</span></button></dt>
-          <dd class="faq-a" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Pages embed as PNG, not JPEG — so there are zero 8×8 DCT block artifacts on text edges. Every processed pixel survives intact in the final PDF.</span></dd>
-        </div>
-      </dl>
-    </div>
-  </div>
-</section>
+      </div>
 
-<!-- ══════════════ FOOTER ══════════════ -->
-<footer class="site-footer" role="contentinfo">
-  <div class="footer-brand">
-    <div class="footer-logo" aria-hidden="true">
-      <svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="1.5"/><rect x="2" y="5.5" width="8" height="1.5"/><rect x="2" y="9" width="10" height="1.5"/><rect x="2" y="12.5" width="6" height="1.5"/></svg>
-    </div>
-    <p class="footer-copy">© 2026 ScanDrift · Node.js · sharp · pdfjs-dist · No cloud · No signup</p>
-  </div>
-  <nav class="footer-right" aria-label="Footer navigation">
-    <a href="#how-it-works">How it works</a>
-    <a href="#faq">FAQ</a>
-    <a href="#features">Features</a>
-  </nav>
-</footer>
-
-</div>
-<script src="theme.js" defer></script>
-<script src="script.js" defer></script>
-</body>
+    </div><!-- /site-wrap -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="theme.js"></script>
+    <script src="script.js" defer></script>
+  </body>
 </html>
