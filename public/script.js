@@ -47,7 +47,7 @@ const SCANNER_PROFILES = {
 };
 
 // ── Payment Config ────────────────────────────────────────────────────────────
-const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SyHTg6Tx87w00alu2CDYVurUofMLWjqgJ1q9fN2n1PYmUrH7tHQ47mjAMvOjUEFxcVcr4xrCsCdgM99ICu9PxSq00VGfA61q4';
+const STRIPE_PUBLISHABLE_KEY = 'pk_live_51TJKAbDtEbOOkPFDvnvqswwhiNmKg5yk2gFpCy0OzVNYjPduVRLuhllOGD0FWJ9O0fsWN8aaTdJBwwgUqr2jwGm700c6oWw09T';
 const FREE_PAGE_LIMIT = 3;
 const TOKEN_KEY = 'scandrift_unlock_token'; // localStorage key
 
