@@ -47,9 +47,31 @@ const SCANNER_PROFILES = {
 };
 
 // ── Payment Config ────────────────────────────────────────────────────────────
-const STRIPE_PUBLISHABLE_KEY = 'pk_live_51TJKAbDtEbOOkPFDvnvqswwhiNmKg5yk2gFpCy0OzVNYjPduVRLuhllOGD0FWJ9O0fsWN8aaTdJBwwgUqr2jwGm700c6oWw09T';
+// No key is hardcoded any more. The server reports the live amount and currency
+// so the button label stays correct whenever the price changes.
 const FREE_PAGE_LIMIT = 3;
 const TOKEN_KEY = 'scandrift_unlock_token'; // localStorage key
+
+let paystackConfig = null;
+
+async function loadPaystackConfig() {
+  if (paystackConfig) return paystackConfig;
+  try {
+    const res = await fetch('/paystack/config');
+    if (!res.ok) throw new Error('config unavailable');
+    paystackConfig = await res.json();
+  } catch {
+    paystackConfig = { configured: false, display: '' };
+  }
+  return paystackConfig;
+}
+
+loadPaystackConfig().then(cfg => {
+  const label = document.getElementById('payBtnLabel');
+  if (label && cfg.configured && cfg.display) {
+    label.textContent = `Pay ${cfg.display} and process`;
+  }
+});
 
 // ── Check for valid stored token ──────────────────────────────────────────────
 function getStoredToken() {
@@ -115,19 +137,25 @@ document.getElementById('successSplash')?.addEventListener('click', e => {
   if (e.target === document.getElementById('successSplash')) hideSuccessSplash();
 });
 
-// ── Handle return from Stripe ─────────────────────────────────────────────────
-(async function handleStripeReturn() {
-  const params = new URLSearchParams(window.location.search);
-  const verifySession = params.get('verify_session');
+// ── Handle return from Paystack ───────────────────────────────────────────────
+// Only reached on the redirect fallback path, when inline.js could not load and
+// the visitor was sent to Paystack's hosted page. Paystack appends
+// ?reference=...&trxref=... to the callback URL itself, so there is no
+// {CHECKOUT_SESSION_ID} template to fill in as there was with Stripe. We read
+// `reference` and fall back to `trxref`, which is also sent.
+(async function handlePaystackReturn() {
+  const params    = new URLSearchParams(window.location.search);
+  const reference = params.get('reference') ?? params.get('trxref');
 
-  if (verifySession) {
+  if (reference) {
+    // Strip the reference from the address bar so a refresh does not retry a
+    // reference the server has already marked as redeemed.
     window.history.replaceState({}, '', window.location.pathname);
     try {
-      const res = await fetch(`/verify-payment?verify_session=${encodeURIComponent(verifySession)}`);
-      if (!res.ok) throw new Error((await res.json()).error ?? 'Verification failed');
-      const { token } = await res.json();
-      storeToken(token);
-      // Show the success splash instead of just a status message
+      const res  = await fetch(`/paystack/verify?reference=${encodeURIComponent(reference)}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? 'Verification failed');
+      storeToken(data.token);
       showSuccessSplash();
     } catch (err) {
       const msg = document.getElementById('statusMsg');
@@ -419,6 +447,39 @@ async function estimatePageCount(files) {
   return 99;
 }
 
+// Paystack will not create a transaction without a customer email. Stripe
+// Checkout collected this on its own hosted page, so the field is injected into
+// the existing modal rather than adding a second dialog.
+function ensureEmailField() {
+  let wrap = document.getElementById('payEmailWrap');
+  if (wrap) return document.getElementById('payEmail');
+
+  wrap = document.createElement('div');
+  wrap.id = 'payEmailWrap';
+  wrap.style.cssText = 'margin:0.9rem 0 0.2rem;text-align:left;';
+  wrap.innerHTML = `
+    <label for="payEmail" style="display:block;font-size:0.78rem;margin-bottom:0.35rem;opacity:0.75;">
+      Email for your receipt
+    </label>
+    <input id="payEmail" type="email" inputmode="email" autocomplete="email"
+           placeholder="you@example.com"
+           style="width:100%;padding:0.65rem 0.75rem;border-radius:6px;
+                  border:1px solid var(--border-mid,#444);
+                  background:var(--surface-2,#1c1c1c);
+                  color:var(--text-1,#eee);font-size:0.9rem;outline:none;" />
+    <div id="payEmailErr" style="display:none;color:#e06c5a;font-size:0.75rem;margin-top:0.35rem;"></div>`;
+
+  payBtn?.parentNode?.insertBefore(wrap, payBtn);
+  return document.getElementById('payEmail');
+}
+
+function showEmailError(msg) {
+  const err = document.getElementById('payEmailErr');
+  if (!err) return;
+  err.textContent = msg;
+  err.style.display = msg ? 'block' : 'none';
+}
+
 function openPayModal(pageCount) {
   if (payPageCount)  payPageCount.textContent  = pageCount;
   if (payPageCountB) payPageCountB.textContent = pageCount;
@@ -426,6 +487,9 @@ function openPayModal(pageCount) {
     payModalBackdrop.style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
+  const input = ensureEmailField();
+  showEmailError('');
+  setTimeout(() => input?.focus(), 80);
 }
 function closePayModal() {
   if (payModalBackdrop) {
@@ -445,25 +509,104 @@ payFreeBtn?.addEventListener('click', () => {
   doSubmit({ capPages: FREE_PAGE_LIMIT });
 });
 
-// Stripe Checkout redirect
+// ── Paystack inline popup checkout ────────────────────────────────────────────
+// The popup is used rather than a redirect because the visitor's uploaded file
+// only exists in memory, in currentFiles. Navigating away to a hosted checkout
+// page unloads it: on return they would face an empty dropzone and have to
+// re-select the file and redo every slider and toggle before they could use the
+// unlock they just paid for.
+
+let paystackPopup = null;
+function getPaystackPopup() {
+  if (typeof PaystackPop === 'undefined') return null; // inline.js blocked or offline
+  if (!paystackPopup) paystackPopup = new PaystackPop();
+  return paystackPopup;
+}
+
+// Exchange a paid reference for an unlock token, then carry on with the job the
+// visitor was already trying to run.
+async function redeemReference(reference) {
+  const res  = await fetch(`/paystack/verify?reference=${encodeURIComponent(reference)}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error ?? 'Verification failed');
+  storeToken(data.token);
+  return data.token;
+}
+
 payBtn?.addEventListener('click', async () => {
-  if (payBtnLabel) payBtnLabel.textContent = 'Redirecting to payment…';
-  if (payBtn) payBtn.disabled = true;
-  try {
-    const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-    const res = await fetch('/create-checkout-session', { method: 'POST' });
-    if (!res.ok) throw new Error('Could not create payment session');
-    const { sessionId } = await res.json();
-    await stripe.redirectToCheckout({ sessionId });
-  } catch (err) {
-    if (payBtnLabel) payBtnLabel.textContent = 'Pay $5 and process';
-    if (payBtn) payBtn.disabled = false;
-    if (statusMsg) {
-      statusMsg.textContent = `Payment error: ${err.message}`;
-      statusMsg.className = 'status error';
-    }
-    closePayModal();
+  const input = ensureEmailField();
+  const email = (input?.value ?? '').trim();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showEmailError('Enter a valid email address to continue.');
+    input?.focus();
+    return;
   }
+  showEmailError('');
+
+  const originalLabel = payBtnLabel?.textContent ?? 'Pay and process';
+  const restoreBtn = () => {
+    if (payBtnLabel) payBtnLabel.textContent = originalLabel;
+    if (payBtn) payBtn.disabled = false;
+  };
+
+  if (payBtnLabel) payBtnLabel.textContent = 'Opening checkout…';
+  if (payBtn) payBtn.disabled = true;
+
+  let data;
+  try {
+    const res = await fetch('/paystack/initialize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    data = await res.json().catch(() => ({}));
+    if (!res.ok || (!data.accessCode && !data.authorizationUrl)) {
+      throw new Error(data.error ?? 'Could not start checkout');
+    }
+  } catch (err) {
+    restoreBtn();
+    showEmailError(err.message);
+    return;
+  }
+
+  const popup = getPaystackPopup();
+
+  // Fallback: inline.js unavailable, so hand off to the hosted page. The file
+  // will be lost on return, but a working checkout beats no checkout.
+  if (!popup || !data.accessCode) {
+    window.location.href = data.authorizationUrl;
+    return;
+  }
+
+  popup.resumeTransaction(data.accessCode, {
+    onSuccess: async (transaction) => {
+      if (payBtnLabel) payBtnLabel.textContent = 'Unlocking…';
+      try {
+        const token = await redeemReference(transaction.reference);
+        closePayModal();
+        restoreBtn();
+        showSuccessSplash();
+        // The file and every setting are still in memory, so run the job the
+        // visitor was blocked on rather than making them start over.
+        if (currentFiles.length) doSubmit({ token });
+      } catch (err) {
+        restoreBtn();
+        if (statusMsg) {
+          statusMsg.textContent = `Payment went through but the unlock failed: ${err.message}. Reference: ${transaction.reference}`;
+          statusMsg.className = 'status error';
+        }
+        closePayModal();
+      }
+    },
+    onCancel: () => {
+      restoreBtn();
+    },
+    onError: (e) => {
+      restoreBtn();
+      showEmailError(e?.message ?? 'Payment could not be completed. Please try again.');
+    },
+  });
 });
 
 // ── Form submit ───────────────────────────────────────────────────────────────
