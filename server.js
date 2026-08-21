@@ -16,18 +16,27 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { tmpdir, platform } from 'node:os';
 import sharp from 'sharp';
-import Stripe from 'stripe';
 
 const execFileAsync = promisify(execFile);
 
-// ── Stripe ────────────────────────────────────────────────────────────────────
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
-  : null;
+// ── Paystack ──────────────────────────────────────────────────────────────────
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY ?? '';
+const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY ?? '';
+const PAYSTACK_API        = 'https://api.paystack.co';
+
+// Charge amount in the smallest unit of the charge currency. For NGN that is
+// kobo, so 800000 = ₦8,000. Set PAYSTACK_CURRENCY to something your Paystack
+// account is actually enabled for: a Nigerian account generally cannot charge
+// cards issued abroad, which matters if your users are mostly outside Nigeria.
+const PAYSTACK_CURRENCY = process.env.PAYSTACK_CURRENCY ?? 'NGN';
+const PAYSTACK_AMOUNT   = Number(process.env.PAYSTACK_AMOUNT ?? 800000);
+
+const PAYMENTS_CONFIGURED = Boolean(PAYSTACK_SECRET_KEY && PAYSTACK_PUBLIC_KEY);
 
 const APP_URL         = process.env.APP_URL ?? 'http://localhost:3000';
 const FREE_PAGE_LIMIT = 3;
 const TOKEN_EXPIRY_MS = 10 * 60 * 60 * 1000;
+const EMAIL_RE        = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET
   ?? (() => {
@@ -62,9 +71,80 @@ function verifyToken(token, ip) {
   return norm(data.ip) === norm(ip);
 }
 
+function clientIpOf(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0].trim()
+      ?? req.socket.remoteAddress
+      ?? '0.0.0.0';
+}
+
+/**
+ * References already exchanged for an unlock token.
+ *
+ * The old Stripe flow tracked nothing here, so the session id left in the URL
+ * after checkout could be redeemed over and over: one payment, unlimited
+ * tokens, one per IP that asked for it. Swap this for Redis if you ever run
+ * more than one process, since a Map is per-instance.
+ */
+const consumedReferences = new Map();
+const REFERENCE_TTL_MS = 24 * 60 * 60 * 1000;
+
+setInterval(() => {
+  const cutoff = Date.now() - REFERENCE_TTL_MS;
+  for (const [ref, at] of consumedReferences.entries()) {
+    if (at < cutoff) consumedReferences.delete(ref);
+  }
+}, 60 * 60 * 1000).unref?.();
+
+// Throttle transaction creation so the endpoint cannot be used to spam
+// Paystack with junk transactions.
+const initRateMap = new Map();
+const INIT_RATE_MAX = 8;
+const INIT_RATE_MS  = 15 * 60 * 1000;
+
+function checkInitRate(ip) {
+  const now = Date.now();
+  const rec = initRateMap.get(ip);
+  if (!rec || now > rec.resetAt) {
+    initRateMap.set(ip, { count: 1, resetAt: now + INIT_RATE_MS });
+    return true;
+  }
+  if (rec.count >= INIT_RATE_MAX) return false;
+  rec.count++;
+  return true;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, rec] of initRateMap.entries()) {
+    if (now > rec.resetAt) initRateMap.delete(ip);
+  }
+}, 5 * 60 * 1000).unref?.();
+
+async function paystackFetch(path, options = {}) {
+  const res = await fetch(`${PAYSTACK_API}${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+      'Content-Type': 'application/json',
+      ...(options.headers ?? {}),
+    },
+  });
+  const body = await res.json().catch(() => ({}));
+  return { ok: res.ok, body };
+}
+
+function formatAmount(minor, currency) {
+  const major = minor / 100;
+  const symbols = { NGN: '₦', USD: '$', GHS: 'GH₵', ZAR: 'R', KES: 'KSh' };
+  const symbol = symbols[currency] ?? `${currency} `;
+  return `${symbol}${major.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
 // ── Diagnostics ───────────────────────────────────────────────────────────────
 console.log('─── Config ──────────────────────────────────────────');
-console.log('  STRIPE_SECRET_KEY:', process.env.STRIPE_SECRET_KEY ? `✓ set` : '✗ NOT SET');
+console.log('  PAYSTACK_SECRET_KEY:', PAYSTACK_SECRET_KEY ? '✓ set' : '✗ NOT SET');
+console.log('  PAYSTACK_PUBLIC_KEY:', PAYSTACK_PUBLIC_KEY ? '✓ set' : '✗ NOT SET');
+console.log('  PRICE:', formatAmount(PAYSTACK_AMOUNT, PAYSTACK_CURRENCY));
 console.log('  TOKEN_SECRET:', process.env.TOKEN_SECRET ? '✓ set' : '⚠  not set');
 console.log('  APP_URL:', APP_URL);
 console.log('─────────────────────────────────────────────────────');
@@ -383,7 +463,14 @@ const uploadPdfOnly = multer({
     file.mimetype === 'application/pdf' ? cb(null, true) : cb(new Error('Only PDF files supported.')),
 });
 
+app.set('trust proxy', 1);
 app.use(express.static(join(__dirname, 'public')));
+
+// The webhook signature is an HMAC over the exact bytes Paystack sent, so this
+// raw parser MUST come before express.json(). If the JSON parser runs first the
+// body is already an object and the signature can never match.
+app.use('/paystack/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '200mb' }));
 
 app.use((req, res, next) => {
@@ -394,13 +481,11 @@ app.use((req, res, next) => {
 });
 
 app.get('/health', (_, res) => res.json({ status: 'ok', node: process.version }));
-// ── GET /dev-token ─── REMOVE BEFORE PRODUCTION ──────────────────────────────
-app.get('/dev-token', (req, res) => {
-  const ip    = req.headers['x-forwarded-for']?.split(',')[0].trim()
-             ?? req.socket.remoteAddress ?? '127.0.0.1';
-  const token = issueToken(ip);
-  res.json({ token, ip });
-});
+// NOTE: the old GET /dev-token route lived here. It handed a full 10-hour
+// unlock token to anyone who visited it, with no payment and no auth, which
+// made the paywall decorative: fetch it, drop the value into localStorage
+// under scandrift_unlock_token, and the page limit is gone. Do not
+// reintroduce it, not even behind a NODE_ENV guard.
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function safeDpi(requestedDpi, pageCount) {
@@ -764,43 +849,150 @@ app.post('/editor/export', async (req, res) => {
     }
 });
 
-// ── POST /create-checkout-session ─────────────────────────────────────────────
-app.post('/create-checkout-session', async (req, res) => {
-  if (!stripe) return res.status(503).json({ error: 'STRIPE_SECRET_KEY not set' });
-  try {
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0].trim()
-                  ?? req.socket.remoteAddress ?? '0.0.0.0';
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: [{ quantity: 1, price_data: {
-        currency: 'usd', unit_amount: 500,
-        product_data: { name: 'ScanDrift — Unlimited Pages', description: 'One-time unlock — valid 10 hours.' },
-      }}],
-      success_url: `${APP_URL}/?verify_session={CHECKOUT_SESSION_ID}&cip=${encodeURIComponent(clientIp)}`,
-      cancel_url:  `${APP_URL}/?cancelled=1`,
-    });
-    res.json({ sessionId: session.id });
-  } catch (err) {
-    console.error('Stripe error:', err.message);
-    res.status(500).json({ error: `Stripe: ${err.message}` });
-  }
+// ══════════════════════════════════════════════════════════════════════════════
+// PAYMENTS — PAYSTACK
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── GET /paystack/config ──────────────────────────────────────────────────────
+// Lets the client render the real price without hardcoding it.
+app.get('/paystack/config', (_req, res) => {
+  res.json({
+    configured: PAYMENTS_CONFIGURED,
+    publicKey:  PAYSTACK_PUBLIC_KEY,
+    currency:   PAYSTACK_CURRENCY,
+    amount:     PAYSTACK_AMOUNT,
+    display:    formatAmount(PAYSTACK_AMOUNT, PAYSTACK_CURRENCY),
+  });
 });
 
-// ── GET /verify-payment ───────────────────────────────────────────────────────
-app.get('/verify-payment', async (req, res) => {
-  const { verify_session, cip } = req.query;
-  if (!verify_session) return res.status(400).json({ error: 'Missing session ID' });
-  if (!stripe)         return res.status(503).json({ error: 'Stripe not configured' });
+// ── POST /paystack/initialize ─────────────────────────────────────────────────
+// Body: { email } → { authorizationUrl, reference }
+//
+// Paystack requires a customer email before it will create a transaction.
+// Stripe Checkout collected this on its own hosted page, so the client has to
+// ask for it before calling this.
+app.post('/paystack/initialize', async (req, res) => {
+  if (!PAYMENTS_CONFIGURED) return res.status(503).json({ error: 'Payments are not configured.' });
+
+  const ip = clientIpOf(req);
+  if (!checkInitRate(ip)) {
+    return res.status(429).json({ error: 'Too many attempts. Please wait a few minutes.' });
+  }
+
+  const email = String(req.body?.email ?? '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) {
+    return res.status(400).json({ error: 'A valid email address is required.' });
+  }
+
+  const { ok, body } = await paystackFetch('/transaction/initialize', {
+    method: 'POST',
+    body: JSON.stringify({
+      email,
+      amount:   PAYSTACK_AMOUNT,
+      currency: PAYSTACK_CURRENCY,
+      // Only used by the redirect fallback. With the inline popup the visitor
+      // never leaves the page, so this is not hit. Paystack appends
+      // ?reference=...&trxref=... to it itself; there is no
+      // {CHECKOUT_SESSION_ID} equivalent to interpolate.
+      callback_url: `${APP_URL}/?paystack_return=1`,
+      metadata: {
+        product: 'ScanForge — Unlimited Pages (10 hour unlock)',
+        ip,
+        custom_fields: [
+          { display_name: 'Product', variable_name: 'product', value: 'ScanForge — Unlimited Pages' },
+        ],
+      },
+    }),
+  });
+
+  if (!ok || !body?.status || !body?.data?.authorization_url) {
+    console.error('✗ paystack initialize:', body?.message ?? 'unknown error');
+    return res.status(502).json({ error: 'Could not start checkout. Please try again.' });
+  }
+
+  console.log(`✓  Paystack initialized: ${body.data.reference} (${email})`);
+  res.json({
+    // accessCode drives the inline popup, which keeps the visitor on the page.
+    // authorizationUrl is the redirect fallback for when inline.js is blocked
+    // or fails to load.
+    accessCode:       body.data.access_code,
+    authorizationUrl: body.data.authorization_url,
+    reference:        body.data.reference,
+  });
+});
+
+// ── GET /paystack/verify ──────────────────────────────────────────────────────
+// Query: ?reference=... → { token }
+app.get('/paystack/verify', async (req, res) => {
+  if (!PAYMENTS_CONFIGURED) return res.status(503).json({ error: 'Payments are not configured.' });
+
+  const reference = String(req.query.reference ?? '').trim();
+  if (!reference) return res.status(400).json({ error: 'Missing payment reference.' });
+
+  // One reference, one token. Without this the reference sitting in the
+  // post-payment URL can be shared and redeemed as many times as anyone likes.
+  if (consumedReferences.has(reference)) {
+    return res.status(409).json({ error: 'This payment has already been redeemed.' });
+  }
+
+  const { ok, body } = await paystackFetch(`/transaction/verify/${encodeURIComponent(reference)}`);
+  if (!ok || !body?.status || !body?.data) {
+    console.error('✗ paystack verify:', body?.message ?? 'unknown error');
+    return res.status(502).json({ error: 'Could not verify payment.' });
+  }
+
+  const tx = body.data;
+
+  if (tx.status !== 'success') {
+    return res.status(402).json({ error: `Payment status is "${tx.status}".` });
+  }
+  // Confirm what was actually charged rather than trusting anything client-side.
+  if (tx.currency !== PAYSTACK_CURRENCY || Number(tx.amount) < PAYSTACK_AMOUNT) {
+    console.error(`✗ paystack amount mismatch on ${reference}: ${tx.amount} ${tx.currency}`);
+    return res.status(402).json({ error: 'Payment amount could not be verified.' });
+  }
+
+  consumedReferences.set(reference, Date.now());
+
+  // Bound to the IP that redeems it, matching the previous behaviour. The old
+  // `cip` query parameter is gone: it came from the client, so a caller could
+  // set it to any address they liked.
+  const ip    = clientIpOf(req);
+  const token = issueToken(ip);
+  console.log(`✓  Token issued → ${reference} → IP ${ip}`);
+  res.json({ token });
+});
+
+// ── POST /paystack/webhook ────────────────────────────────────────────────────
+// Paystack retries until it gets a 200. This is the reliable record of a
+// successful charge when the customer closes the tab before returning.
+app.post('/paystack/webhook', (req, res) => {
+  const signature = req.headers['x-paystack-signature'];
+  const raw = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body ?? {}));
+  const expected = createHmac('sha512', PAYSTACK_SECRET_KEY).update(raw).digest('hex');
+
+  let valid = false;
   try {
-    const session = await stripe.checkout.sessions.retrieve(verify_session);
-    if (session.payment_status !== 'paid') return res.status(402).json({ error: 'Payment not completed' });
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0].trim()
-                  ?? req.socket.remoteAddress ?? cip ?? '0.0.0.0';
-    const token = issueToken(clientIp);
-    console.log(`✓  Token issued → IP: ${clientIp}`);
-    res.json({ token });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const a = Buffer.from(String(signature ?? ''), 'utf8');
+    const b = Buffer.from(expected, 'utf8');
+    valid = a.length === b.length && timingSafeEqual(a, b);
+  } catch { valid = false; }
+
+  if (!valid) {
+    console.warn('⚠  Rejected Paystack webhook with bad signature');
+    return res.sendStatus(401);
+  }
+
+  res.sendStatus(200);
+
+  let event;
+  try { event = JSON.parse(raw.toString('utf8')); } catch { return; }
+
+  if (event?.event === 'charge.success') {
+    // Nothing to fulfil server-side: the unlock is a token the browser collects
+    // on return. This is for your records and for reconciling payments where
+    // the customer never came back to claim one.
+    console.log(`ℹ  Webhook charge.success: ${event.data?.reference} (${event.data?.customer?.email})`);
   }
 });
 
@@ -821,8 +1013,7 @@ app.post('/process', upload.fields([
   }
 
   const unlockToken = req.body.unlockToken ?? null;
-  const clientIp    = req.headers['x-forwarded-for']?.split(',')[0].trim()
-                   ?? req.socket.remoteAddress ?? '0.0.0.0';
+  const clientIp    = clientIpOf(req);
   const isUnlocked  = verifyToken(unlockToken, clientIp);
 
   const capPages = (!isUnlocked && req.body.capPages)
