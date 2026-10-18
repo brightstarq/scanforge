@@ -841,6 +841,8 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 
   .lib-bar .seg { order: 3; width: 100%; }
 }
 
+
+
 /* ═══════════════════════════════════════════════════════════════════════════
    MODALS
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -902,6 +904,7 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 
 #payEmail { border-radius: var(--r-sm) !important; height: 42px; background: var(--white) !important; border-color: var(--line-2) !important; color: var(--ink) !important; }
 #payEmail:focus { border-color: var(--ink) !important; }
 .pay-or { font-size: 12px; color: var(--muted); margin: 10px 0; }
+.pay-charge-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
 .pay-free-btn { width: 100%; }
 
 .success-splash-inner { max-width: 460px; padding: 30px 26px 24px; text-align: center; overflow: hidden; }
@@ -923,7 +926,7 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 
 .success-splash.hiding { opacity: 0; transition: opacity .3s; }
 
 /* ── WhatsApp ─────────────────────────────────────────────────────────────── */
-.wa-fab { position: fixed; right: 20px; bottom: 20px; z-index: 50; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 16px 0 14px; border-radius: var(--pill); background: var(--ink); color: var(--white); box-shadow: 0 10px 30px rgba(23,33,31,.25); font-size: 14px; font-weight: 600; transition: transform .2s; }
+.wa-fab { position: fixed; left: 20px; bottom: 20px; z-index: 50; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 16px 0 14px; border-radius: var(--pill); background: var(--ink); color: var(--white); box-shadow: 0 10px 30px rgba(23,33,31,.25); font-size: 14px; font-weight: 600; transition: transform .2s; }
 .wa-fab:hover { transform: translateY(-2px); }
 .wa-fab svg { width: 20px; height: 20px; fill: var(--lime); }
 
