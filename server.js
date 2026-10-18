@@ -571,6 +571,47 @@ app.post('/preview', upload.fields([{ name: 'file', maxCount: 1 }]), async (req,
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── POST /preview-pages ───────────────────────────────────────────────────────
+// Small JPEG previews of the first few pages, used by the Scanner workspace for
+// its live before/after preview and page strip. Rendered at low DPI and capped
+// so a long PDF does not tie up the server just to draw thumbnails.
+// Returns: { count: number, pages: string[] }  (base64 JPEG per page)
+const PREVIEW_PAGE_CAP = 12;
+app.post('/preview-pages', upload.fields([{ name: 'file', maxCount: 1 }]), async (req, res) => {
+  const file = req.files?.file?.[0];
+  if (!file) return res.status(400).json({ error: 'No file' });
+  try {
+    const toJpeg = buf => sharp(buf)
+      .resize(900, null, { fit: 'inside', withoutEnlargement: true })
+      .flatten({ background: '#ffffff' })
+      .jpeg({ quality: 80 }).toBuffer();
+
+    if (IMAGE_TYPES.has(file.mimetype)) {
+      const jpg = await toJpeg(file.buffer);
+      return res.json({ count: 1, pages: [jpg.toString('base64')] });
+    }
+
+    const pdf = await getDocument({
+      data: toSafeUint8Array(file.buffer),
+      StandardFontDataFactory: NodeFontDataFactory,
+      useWorkerFetch: false, isEvalSupported: false, useSystemFonts: false,
+    }).promise;
+    const count = pdf.numPages;
+    const pages = [];
+    try {
+      for (let i = 1; i <= Math.min(count, PREVIEW_PAGE_CAP); i++) {
+        const page     = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.25 });
+        const canvas   = createCanvas(Math.round(viewport.width), Math.round(viewport.height));
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        pages.push((await toJpeg(canvas.toBuffer('image/png'))).toString('base64'));
+        page.cleanup();
+      }
+    } finally { pdf.destroy(); }
+    res.json({ count, pages });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ── POST /page-count ──────────────────────────────────────────────────────────
 app.post('/page-count', upload.fields([{ name: 'file', maxCount: 1 }]), async (req, res) => {
   const file = req.files?.file?.[0];
@@ -606,6 +647,9 @@ app.post('/compress-pdf', uploadPdfOnly.single('file'), async (req, res) => {
     } else {
       compressed = await compressWithGhostscript(req.file.buffer, preset);
     }
+    // Already-lean PDFs can come back larger after a rewrite. Never hand the
+    // visitor a "compressed" file that is bigger than what they uploaded.
+    if (compressed.length >= origSize) compressed = req.file.buffer;
     const newSize  = compressed.length;
     const savedPct = Math.max(0, Math.round((1 - newSize / origSize) * 100));
     console.log(`✓  compress | ${(origSize/1024).toFixed(0)}KB → ${(newSize/1024).toFixed(0)}KB | saved ${savedPct}%`);

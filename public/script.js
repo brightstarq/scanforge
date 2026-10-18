@@ -127,8 +127,8 @@ function hideSuccessSplash() {
     splash.style.display = 'none';
     splash.classList.remove('hiding');
     document.body.style.overflow = '';
-    // Scroll to the app card
-    document.querySelector('.app-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Return to the Scanner workspace
+    if (location.hash !== '#/scanner') location.hash = '#/scanner';
   }, 400);
 }
 
@@ -237,7 +237,7 @@ function setFiles(files) {
   fmtImageWrap.style.display = (!isMulti && !isPdf) ? '' : 'none';
   if (isMulti || isPdf) document.getElementById('f-pdf').checked = true;
 
-  loadPreview(currentFiles[0]);
+  document.dispatchEvent(new CustomEvent('sd:scan-files', { detail: currentFiles }));
 }
 
 function clearFile() {
@@ -249,6 +249,8 @@ function clearFile() {
   const ph    = document.getElementById('sigPreviewPlaceholder');
   if (thumb) { thumb.src = ''; thumb.style.display = 'none'; }
   if (ph)    ph.style.display = '';
+  pdfInput.value = '';
+  document.dispatchEvent(new CustomEvent('sd:scan-clear'));
 }
 
 dropzone.addEventListener('click', (e) => {
@@ -266,24 +268,7 @@ dropzone.addEventListener('drop', e => {
 pdfInput.addEventListener('change', () => { if (pdfInput.files.length) setFiles(pdfInput.files); });
 clearBtn.addEventListener('click', clearFile);
 
-// ── Preview loader ────────────────────────────────────────────────────────────
-async function loadPreview(file) {
-  const thumb = document.getElementById('sigPageThumb');
-  const ph    = document.getElementById('sigPreviewPlaceholder');
-  if (!thumb) return;
-  try {
-    const fd  = new FormData();
-    fd.append('file', file);
-    const res = await fetch('/preview', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error('preview failed');
-    const url = URL.createObjectURL(await res.blob());
-    thumb.src = url;
-    thumb.style.display = 'block';
-    if (ph) ph.style.display = 'none';
-  } catch (e) {
-    console.warn('Preview load failed:', e.message);
-  }
-}
+// ── Preview loader ── moved to workspace.js (multi-page /preview-pages)
 
 // ── Presets ───────────────────────────────────────────────────────────────────
 const PRESETS = {
@@ -729,6 +714,10 @@ let fake = 8;
     const match = disp.match(/filename="(.+?)"/);
     a.href = url; a.download = match?.[1] ?? 'scanned.pdf'; a.click();
     URL.revokeObjectURL(url);
+    document.dispatchEvent(new CustomEvent('sd:result', { detail: {
+      tool: 'scan', blob, name: a.download, sources: currentFiles.slice(),
+      capped: capPages, format: document.querySelector('input[name="format"]:checked')?.value ?? 'pdf',
+    } }));
     progressLabel.textContent = 'Done ✓';
     statusMsg.textContent = `Downloaded: ${a.download}`;
     statusMsg.className = 'status success';
@@ -1055,283 +1044,7 @@ document.getElementById('sigPageSelect')?.addEventListener('change', e => {
 
 // ─── [existing script.js content — paste your original script.js above this line] ───
 
-// ══════════════════════════════════════════════════════════════════════════════
-// PDF COMPRESSOR UI
-// Appended below existing script.js content. No conflicts — fully self-contained.
-// ══════════════════════════════════════════════════════════════════════════════
-// ─── [existing script.js content — paste your original script.js above this line] ───
-
-// ══════════════════════════════════════════════════════════════════════════════
-// FILE COMPRESSOR UI — replaces old compress-append.js entirely
-// Handles PDF, images (JPG/PNG/WEBP), Office docs (DOCX/XLSX/PPTX), and ZIP
-// ══════════════════════════════════════════════════════════════════════════════
-(function initCompressor() {
-  const cmpDropzone      = document.getElementById('cmpDropzone');
-  const cmpInput         = document.getElementById('cmpInput');
-  const cmpFileBar       = document.getElementById('cmpFileBar');
-  const cmpFileName      = document.getElementById('cmpFileName');
-  const cmpFileSize      = document.getElementById('cmpFileSize');
-  const cmpClearBtn      = document.getElementById('cmpClearBtn');
-  const cmpSubmitBtn     = document.getElementById('cmpSubmitBtn');
-  const cmpProgressWrap  = document.getElementById('cmpProgressWrap');
-  const cmpProgressFill  = document.getElementById('cmpProgressFill');
-  const cmpProgressPct   = document.getElementById('cmpProgressPct');
-  const cmpProgressLabel = document.getElementById('cmpProgressLabel');
-  const cmpResult        = document.getElementById('cmpResult');
-  const cmpBefore        = document.getElementById('cmpBefore');
-  const cmpAfter         = document.getElementById('cmpAfter');
-  const cmpSavedBadge    = document.getElementById('cmpSavedBadge');
-  const cmpStatus        = document.getElementById('cmpStatus');
-  const presetHint       = document.getElementById('cmpPresetHint');
-
-  if (!cmpDropzone) return;
-
-  // ── File type detection ───────────────────────────────────────────────────
-  const PDF_TYPES   = new Set(['application/pdf']);
-  const IMAGE_TYPES = new Set(['image/jpeg','image/jpg','image/png','image/webp']);
-  const DOC_TYPES   = new Set([
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'application/msword',
-  ]);
-  const ZIP_TYPES = new Set([
-    'application/zip','application/x-zip','application/x-zip-compressed','application/octet-stream',
-  ]);
-
-  function detectFileType(file) {
-    if (PDF_TYPES.has(file.type))   return 'pdf';
-    if (IMAGE_TYPES.has(file.type)) return 'image';
-    if (DOC_TYPES.has(file.type))   return 'doc';
-    if (ZIP_TYPES.has(file.type))   return 'doc';
-    const ext = file.name.split('.').pop().toLowerCase();
-    if (ext === 'pdf')                                     return 'pdf';
-    if (['jpg','jpeg','png','webp'].includes(ext))         return 'image';
-    if (['docx','xlsx','pptx','doc','zip'].includes(ext))  return 'doc';
-    return null;
-  }
-
-  const TYPE_LABELS = { pdf: 'PDF', image: 'IMG', doc: 'DOC' };
-  const fmtBytes = b =>
-    b < 1_048_576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1_048_576).toFixed(2)} MB`;
-
-  let currentFile     = null;
-  let currentFileType = null;
-
-  const PRESET_HINTS = {
-    pdf:   '· PDF mode',
-    image: '· Image mode',
-    doc:   '· Document mode',
-  };
-
-  // ── Inject image quality controls ─────────────────────────────────────────
-  let imgQualityRow = document.getElementById('cmpImgQualityRow');
-  if (!imgQualityRow) {
-    imgQualityRow = document.createElement('div');
-    imgQualityRow.id = 'cmpImgQualityRow';
-    imgQualityRow.style.cssText = 'display:none;margin:0.75rem 0;';
-    imgQualityRow.innerHTML = `
-      <div class="field">
-        <div class="field-lbl">Image Quality <span id="cmpImgQualVal">82</span>%
-          <span class="field-hint">lower = smaller file</span></div>
-        <input type="range" id="cmpImgQual" min="20" max="100" step="1" value="82" />
-      </div>
-      <div class="field" style="margin-top:0.5rem;">
-        <div class="field-lbl">Output Format</div>
-        <select id="cmpImgFmt">
-          <option value="auto">Auto (keep original)</option>
-          <option value="jpeg">JPEG — smallest</option>
-          <option value="png">PNG — lossless</option>
-          <option value="webp">WEBP — best ratio</option>
-        </select>
-      </div>`;
-    const presetRow = document.querySelector('.preset-row[role="radiogroup"]');
-    if (presetRow) presetRow.after(imgQualityRow);
-  }
-
-  const imgQualSlider = document.getElementById('cmpImgQual');
-  const imgQualVal    = document.getElementById('cmpImgQualVal');
-  const imgFmtSel     = document.getElementById('cmpImgFmt');
-  imgQualSlider?.addEventListener('input', () => {
-    if (imgQualVal) imgQualVal.textContent = imgQualSlider.value;
-  });
-
-  const typeBadge = document.querySelector('#cmpFileBar .file-type-badge');
-
-  // ── setFile ───────────────────────────────────────────────────────────────
-  function setFile(file) {
-    const type = detectFileType(file);
-    if (!type) {
-      showStatus('Unsupported file. Accepted: PDF, JPG, PNG, WEBP, DOCX, XLSX, PPTX, ZIP.', true);
-      return;
-    }
-    if (file.size > 50 * 1024 * 1024) {
-      showStatus('File too large — maximum 50 MB.', true);
-      return;
-    }
-    currentFile     = file;
-    currentFileType = type;
-    cmpFileName.textContent = file.name;
-    cmpFileSize.textContent = fmtBytes(file.size);
-    if (typeBadge) typeBadge.textContent = TYPE_LABELS[type] ?? 'FILE';
-    cmpFileBar.style.display = 'flex';
-    cmpSubmitBtn.disabled = false;
-    cmpResult.style.display = 'none';
-    showStatus('');
-
-    // Update button label
-    const btnLabel = cmpSubmitBtn.querySelector('.btn-label');
-    if (btnLabel) {
-      btnLabel.textContent = type === 'pdf'   ? 'Compress PDF'
-                           : type === 'image' ? 'Compress Image'
-                           : 'Compress File';
-    }
-
-    // Image quality row
-    if (imgQualityRow) imgQualityRow.style.display = type === 'image' ? 'block' : 'none';
-
-    // Preset hint
-    if (presetHint) presetHint.textContent = PRESET_HINTS[type] ?? '';
-
-    // Hide PDF presets for non-PDF — scoped to #compress section
-    const presetLbl = document.getElementById('cmp-preset-lbl');
-    const presetRow = document.querySelector('#compress .preset-row[role="radiogroup"]')
-                   ?? document.querySelector('[aria-labelledby="cmp-preset-lbl"]');
-    const isPdf     = type === 'pdf';
-    if (presetLbl) presetLbl.style.display = isPdf ? '' : 'none';
-    if (presetRow) presetRow.style.display = isPdf ? '' : 'none';
-  }
-
-  function clearFile() {
-    currentFile = null; currentFileType = null;
-    cmpFileBar.style.display = 'none';
-    cmpSubmitBtn.disabled = true;
-    cmpResult.style.display = 'none';
-    showStatus('');
-    cmpInput.value = '';
-    if (imgQualityRow) imgQualityRow.style.display = 'none';
-    if (presetHint) presetHint.textContent = '· PDF mode';
-    const btnLabel = cmpSubmitBtn.querySelector('.btn-label');
-    if (btnLabel) btnLabel.textContent = 'Compress File';
-    const presetLbl = document.getElementById('cmp-preset-lbl');
-    const presetRow = document.querySelector('#compress .preset-row[role="radiogroup"]')
-                   ?? document.querySelector('[aria-labelledby="cmp-preset-lbl"]');
-    if (presetLbl) presetLbl.style.display = '';
-    if (presetRow) presetRow.style.display = '';
-  }
-
-  function showStatus(msg, isError = false) {
-    if (!cmpStatus) return;
-    cmpStatus.textContent = msg;
-    cmpStatus.className   = msg ? (isError ? 'status error' : 'status success') : 'status';
-  }
-
-  // ── Events ────────────────────────────────────────────────────────────────
-  cmpDropzone.addEventListener('click',   e => { if (e.target !== cmpInput) cmpInput.click(); });
-  cmpDropzone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') cmpInput.click(); });
-  cmpDropzone.addEventListener('dragover',  e => { e.preventDefault(); cmpDropzone.classList.add('drag-over'); });
-  cmpDropzone.addEventListener('dragleave', () => cmpDropzone.classList.remove('drag-over'));
-  cmpDropzone.addEventListener('drop', e => {
-    e.preventDefault(); cmpDropzone.classList.remove('drag-over');
-    const f = e.dataTransfer.files[0]; if (f) setFile(f);
-  });
-  cmpInput.addEventListener('change', () => { if (cmpInput.files[0]) setFile(cmpInput.files[0]); });
-  cmpClearBtn.addEventListener('click', clearFile);
-
-  // ── Submit ────────────────────────────────────────────────────────────────
-  cmpSubmitBtn.addEventListener('click', async () => {
-    if (!currentFile || !currentFileType) return;
-
-    const fd = new FormData();
-    fd.append('file', currentFile);
-
-    let endpoint;
-    if (currentFileType === 'pdf') {
-      endpoint = '/compress-pdf';
-      fd.append('preset', document.querySelector('input[name="cmpPreset"]:checked')?.value ?? 'high');
-    } else if (currentFileType === 'image') {
-      endpoint = '/compress-image';
-      fd.append('quality', imgQualSlider?.value ?? 82);
-      fd.append('format',  imgFmtSel?.value ?? 'auto');
-    } else {
-      endpoint = '/compress-doc';
-      fd.append('quality', 80);
-    }
-
-    cmpSubmitBtn.disabled          = true;
-    cmpProgressWrap.style.display  = 'block';
-    cmpProgressFill.style.width    = '0%';
-    cmpProgressPct.textContent     = '0%';
-    cmpProgressLabel.textContent   = 'Uploading…';
-    cmpResult.style.display = 'none';
-    showStatus('');
-
-    await new Promise(r => setTimeout(r, 30));
-    cmpProgressFill.style.width  = '8%';
-    cmpProgressPct.textContent   = '8%';
-    cmpProgressLabel.textContent = 'Compressing…';
-
-    let fake = 8;
-    const timer = setInterval(() => {
-      fake = Math.min(fake + (88 - fake) * 0.06 + 0.4, 88);
-      cmpProgressFill.style.width = `${Math.round(fake)}%`;
-      cmpProgressPct.textContent  = `${Math.round(fake)}%`;
-    }, 200);
-
-    try {
-      const res = await fetch(endpoint, { method: 'POST', body: fd });
-      clearInterval(timer);
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: res.statusText }));
-        throw new Error(err.error ?? `HTTP ${res.status}`);
-      }
-
-      cmpProgressFill.style.width  = '100%';
-      cmpProgressPct.textContent   = '100%';
-      cmpProgressLabel.textContent = 'Done ✓';
-
-      const origSize = parseInt(res.headers.get('X-Original-Size')   ?? '0', 10);
-      const newSize  = parseInt(res.headers.get('X-Compressed-Size') ?? '0', 10);
-      const savedPct = parseInt(res.headers.get('X-Saved-Percent')   ?? '0', 10);
-
-      function parseFilename(disp) {
-        const utf8  = disp.match(/filename\*=UTF-8''([^;\s]+)/i);
-        if (utf8)  return decodeURIComponent(utf8[1]);
-        const ascii = disp.match(/filename="(.+?)"/);
-        return ascii ? ascii[1] : null;
-      }
-
-      const blob = await res.blob();
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      const disp = res.headers.get('content-disposition') ?? '';
-      a.href     = url;
-      a.download = parseFilename(disp) ?? currentFile.name.replace(/(\.[^.]+)$/, '_compressed$1');
-      a.click();
-      URL.revokeObjectURL(url);
-
-      if (origSize && newSize) {
-        cmpBefore.textContent     = fmtBytes(origSize);
-        cmpAfter.textContent      = fmtBytes(newSize);
-        cmpSavedBadge.textContent = savedPct > 0 ? `↓ ${savedPct}% smaller` : 'Already optimal';
-        cmpResult.style.display = 'flex';
-      }
-      showStatus(`Downloaded: ${a.download}`);
-
-    } catch (err) {
-      clearInterval(timer);
-      cmpProgressFill.style.width  = '0%';
-      cmpProgressLabel.textContent = 'Error';
-      showStatus(err.message, true);
-    } finally {
-      cmpSubmitBtn.disabled = false;
-      setTimeout(() => { cmpProgressWrap.style.display = 'none'; }, 3500);
-    }
-  });
-
-})();
-
+// File compressor UI lives in workspace.js (multi-file queue).
 
 // ══════════════════════════════════════════════════════════════════════════════
 // SCANDRIFT PDF CANVAS EDITOR — Full rewrite
@@ -1473,8 +1186,7 @@ document.getElementById('sigPageSelect')?.addEventListener('change', e => {
   editorOpenBtn.addEventListener('click', async () => {
     if (!currentFile) return;
     editorModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    document.querySelector('.scan-beam')?.style.setProperty('display','none');
+    document.getElementById('editorPanel')?.classList.add('doc-open');
     if (editorLoading) editorLoading.style.display = 'flex';
     if (editorFilename) editorFilename.textContent = state.filename;
     await loadEditorPages(currentFile);
@@ -1482,12 +1194,12 @@ document.getElementById('sigPageSelect')?.addEventListener('change', e => {
 
   function closeEditorModal() {
     editorModal.style.display = 'none';
-    document.body.style.overflow = '';
-    document.querySelector('.scan-beam')?.style.removeProperty('display');
+    document.getElementById('editorPanel')?.classList.remove('doc-open');
     removeTextToolbar();
+    const lo = document.getElementById('editorLoading');
+    if (lo) lo.style.display = 'none';
   }
   editorCloseBtn?.addEventListener('click', closeEditorModal);
-  editorModal?.addEventListener('click', e => { if (e.target === editorModal) closeEditorModal(); });
 
   // ── Load pages ────────────────────────────────────────────────────────────────
   async function loadEditorPages(file) {
@@ -1673,6 +1385,7 @@ document.getElementById('sigPageSelect')?.addEventListener('change', e => {
       if (state.selected?.annIdx === i) drawSelectionHandles(ctx, ann);
     }
     ctx.restore();
+    document.dispatchEvent(new CustomEvent('sd:editor-render'));
   }
 
   // ── Draw annotation ───────────────────────────────────────────────────────────
@@ -1980,7 +1693,9 @@ document.getElementById('sigPageSelect')?.addEventListener('change', e => {
   // ── Keyboard shortcuts ────────────────────────────────────────────────────────
   document.addEventListener('keydown', e => {
     if (!editorModal || editorModal.style.display === 'none') return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (!document.documentElement.classList.contains('view-app') || !location.hash.startsWith('#/editor')) return;
+    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+    if (document.getElementById('editorSigModal')?.style.display === 'flex') return;
 
     if ((e.ctrlKey||e.metaKey) && e.key==='z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
     if ((e.ctrlKey||e.metaKey) && (e.key==='y'||(e.key==='z'&&e.shiftKey))) { e.preventDefault(); redo(); return; }
@@ -2815,7 +2530,8 @@ document.getElementById('sigPageSelect')?.addEventListener('change', e => {
   editorExportBtn?.addEventListener('click', async () => {
     if (!state.pages.length) return;
     editorExportBtn.disabled   = true;
-    editorExportBtn.textContent = 'Exporting…';
+    editorExportBtn.innerHTML = '<span class="spin spin-sm"></span> Exporting…';
+    if (editorStatus) { editorStatus.textContent = ''; editorStatus.className = 'status'; }
 
     try {
       const exportPages = [];
@@ -2853,12 +2569,15 @@ document.getElementById('sigPageSelect')?.addEventListener('change', e => {
         : (asciiMatch?.[1] ?? `${state.filename}_edited.pdf`);
       a.click();
       URL.revokeObjectURL(url);
+      document.dispatchEvent(new CustomEvent('sd:result', { detail: {
+        tool: 'edit', blob, name: a.download, sources: currentFile ? [currentFile] : [], pages: state.pages.length,
+      } }));
 
-      editorExportBtn.textContent = 'Done ✓';
-      setTimeout(() => { editorExportBtn.disabled=false; editorExportBtn.textContent='↓ Export PDF'; }, 2500);
+      editorExportBtn.innerHTML = '<svg class="ic"><use href="#i-check"/></svg> Saved';
+      setTimeout(() => { editorExportBtn.disabled=false; editorExportBtn.innerHTML='<svg class="ic"><use href="#i-download"/></svg> Export PDF'; }, 2500);
     } catch (err) {
       editorExportBtn.disabled   = false;
-      editorExportBtn.textContent = '↓ Export PDF';
+      editorExportBtn.innerHTML = '<svg class="ic"><use href="#i-download"/></svg> Export PDF';
       if (editorStatus) { editorStatus.textContent=`Export failed: ${err.message}`; editorStatus.className='status error'; }
     }
   });
@@ -2884,6 +2603,25 @@ document.getElementById('sigPageSelect')?.addEventListener('change', e => {
   if (editorItalic)     state.italic     = editorItalic.checked;
 
   updateToolOpts();
+
+  window.ScanDriftEditor = {
+    state,
+    render,
+    saveHistory,
+    refreshThumb: () => updateThumbnail(state.currentPage),
+    select(idx) { state.selected = idx === null ? null : { annIdx: idx }; render(); },
+    remove(idx) {
+      saveHistory();
+      state.annotations[state.currentPage].splice(idx, 1);
+      state.selected = null;
+      render();
+      updateThumbnail(state.currentPage);
+    },
+    setColor(c) { state.color = c; if (editorColor) editorColor.value = c; },
+  };
+  document.getElementById('editorSigCancel')?.addEventListener('click', () => {
+    if (editorSigModal) editorSigModal.style.display = 'none';
+  });
 
 })();
 
@@ -2921,50 +2659,28 @@ function setButtonLoading(btn, loading, label) {
     const observer = new MutationObserver(() => {
       const txt = progressLabel?.textContent ?? '';
       if (txt === 'Done ✓' || txt === 'Error') {
-        setButtonLoading(submitBtn, false, 'Apply Scan Effect');
+        setButtonLoading(submitBtn, false, 'Scan document');
         submitBtn.disabled = false;
       }
     });
     if (progressLabel) observer.observe(progressLabel, { childList: true, characterData: true, subtree: true });
 
     form.addEventListener('submit', () => {
-      setButtonLoading(submitBtn, true, 'Processing…');
+      setButtonLoading(submitBtn, true, 'Scanning…');
     }, { capture: true });
     return;
   }
 
   // If doSubmit is accessible, wrap it directly
   window.doSubmit = async function(...args) {
-    setButtonLoading(submitBtn, true, 'Processing…');
+    setButtonLoading(submitBtn, true, 'Scanning…');
     try {
       await _origDoSubmit(...args);
     } finally {
-      setButtonLoading(submitBtn, false, 'Apply Scan Effect');
+      setButtonLoading(submitBtn, false, 'Scan document');
       submitBtn.disabled = false;
     }
   };
-})();
-
-// ── Patch compress button spinner ─────────────────────────────────────────────
-// Hooks into the existing compressor IIFE by observing cmpProgressLabel.
-(function patchCompressSpinner() {
-  const cmpBtn   = document.getElementById('cmpSubmitBtn');
-  const cmpLabel = document.getElementById('cmpProgressLabel');
-  if (!cmpBtn || !cmpLabel) return;
-
-  const observer = new MutationObserver(() => {
-    const txt = cmpLabel.textContent ?? '';
-    if (txt === 'Done ✓' || txt === 'Error') {
-      setButtonLoading(cmpBtn, false, 'Compress PDF');
-      cmpBtn.disabled = false;
-    }
-  });
-  observer.observe(cmpLabel, { childList: true, characterData: true, subtree: true });
-
-  // Intercept clicks before the compressor IIFE handles them
-  cmpBtn.addEventListener('click', () => {
-    setButtonLoading(cmpBtn, true, 'Compressing…');
-  }, { capture: true });
 })();
 
 // ── Patch editor open button spinner ─────────────────────────────────────────
