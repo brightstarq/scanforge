@@ -9,7 +9,7 @@ import { processPage, compositeSignature, applyBackBleed } from './scanner.js';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { writeFile, readFile, unlink } from 'node:fs/promises';
 import { createHmac, timingSafeEqual, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
@@ -32,6 +32,11 @@ const PAYSTACK_CURRENCY = process.env.PAYSTACK_CURRENCY ?? 'NGN';
 const PAYSTACK_AMOUNT   = Number(process.env.PAYSTACK_AMOUNT ?? 800000);
 
 const PAYMENTS_CONFIGURED = Boolean(PAYSTACK_SECRET_KEY && PAYSTACK_PUBLIC_KEY);
+
+// Optional price shown on the site, e.g. "$5", when Paystack charges the
+// equivalent in another currency. The real charge is still PAYSTACK_AMOUNT in
+// PAYSTACK_CURRENCY, and the pay window tells the buyer that amount.
+const PRICE_LABEL = (process.env.PRICE_LABEL ?? '').trim();
 
 const APP_URL         = process.env.APP_URL ?? 'http://localhost:3000';
 const FREE_PAGE_LIMIT = 3;
@@ -144,7 +149,7 @@ function formatAmount(minor, currency) {
 console.log('─── Config ──────────────────────────────────────────');
 console.log('  PAYSTACK_SECRET_KEY:', PAYSTACK_SECRET_KEY ? '✓ set' : '✗ NOT SET');
 console.log('  PAYSTACK_PUBLIC_KEY:', PAYSTACK_PUBLIC_KEY ? '✓ set' : '✗ NOT SET');
-console.log('  PRICE:', formatAmount(PAYSTACK_AMOUNT, PAYSTACK_CURRENCY));
+console.log('  PRICE:', formatAmount(PAYSTACK_AMOUNT, PAYSTACK_CURRENCY) + (PRICE_LABEL ? ` (shown on site as ${PRICE_LABEL})` : ''));
 console.log('  TOKEN_SECRET:', process.env.TOKEN_SECRET ? '✓ set' : '⚠  not set');
 console.log('  APP_URL:', APP_URL);
 console.log('─────────────────────────────────────────────────────');
@@ -206,10 +211,37 @@ function contentDisposition(filename) {
 // GHOSTSCRIPT
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Use correct GS binary per OS: Windows = gswin64c, Linux/Mac = gs
+// Ghostscript binary. Order: GHOSTSCRIPT_PATH in .env → on Windows, the newest
+// install under Program Files\gs (the installer does not add itself to PATH)
+// → the plain command name, resolved through PATH.
+let _gsBin = null;
 function getGsBin() {
-  return platform() === 'win32' ? 'gswin64c' : 'gs';
+  if (_gsBin) return _gsBin;
+  const fromEnv = (process.env.GHOSTSCRIPT_PATH ?? '').trim();
+  if (fromEnv) return (_gsBin = fromEnv);
+  if (platform() !== 'win32') return (_gsBin = 'gs');
+  for (const base of [process.env.ProgramFiles, process.env['ProgramFiles(x86)'], 'C:\\Program Files', 'C:\\Program Files (x86)']) {
+    if (!base) continue;
+    const gsRoot = join(base, 'gs');
+    if (!existsSync(gsRoot)) continue;
+    const versions = readdirSync(gsRoot).filter(d => /^gs\d/.test(d))
+      .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+    for (const v of versions) {
+      for (const exe of ['gswin64c.exe', 'gswin32c.exe']) {
+        const full = join(gsRoot, v, 'bin', exe);
+        if (existsSync(full)) return (_gsBin = full);
+      }
+    }
+  }
+  return (_gsBin = 'gswin64c');
 }
+
+// Startup check so a missing install shows up in the log, not as a failed upload
+let GS_AVAILABLE = false;
+execFileAsync(getGsBin(), ['--version'], { timeout: 10_000 })
+  .then(({ stdout }) => { GS_AVAILABLE = true; console.log(`  GHOSTSCRIPT: ✓ ${stdout.trim()} (${getGsBin()})`); })
+  .catch(() => console.warn('  GHOSTSCRIPT: ✗ not found — PDF compression (High / Medium) will not work.\n' +
+    '               Install it from https://ghostscript.com/releases/gsdnld.html, or set GHOSTSCRIPT_PATH in .env'));
 
 // GS args per preset — properly differentiated
 const GS_ARGS = {
@@ -663,7 +695,11 @@ app.post('/compress-pdf', uploadPdfOnly.single('file'), async (req, res) => {
     res.send(Buffer.from(compressed));
   } catch (err) {
     console.error('✗ compress:', err.message);
-    if (!res.headersSent) res.status(500).json({ error: err.message });
+    if (res.headersSent) return;
+    if (err.code === 'ENOENT') {
+      return res.status(503).json({ error: 'PDF compression is unavailable right now. Try the Small File setting, or try again later.' });
+    }
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -905,7 +941,8 @@ app.get('/paystack/config', (_req, res) => {
     publicKey:  PAYSTACK_PUBLIC_KEY,
     currency:   PAYSTACK_CURRENCY,
     amount:     PAYSTACK_AMOUNT,
-    display:    formatAmount(PAYSTACK_AMOUNT, PAYSTACK_CURRENCY),
+    display:    PRICE_LABEL || formatAmount(PAYSTACK_AMOUNT, PAYSTACK_CURRENCY),
+    charged:    formatAmount(PAYSTACK_AMOUNT, PAYSTACK_CURRENCY),
   });
 });
 
