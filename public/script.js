@@ -71,6 +71,12 @@ loadPaystackConfig().then(cfg => {
   if (label && cfg.configured && cfg.display) {
     label.textContent = `Pay ${cfg.display} and process`;
   }
+  // When the site shows a price in another currency, say what Paystack bills
+  const note = document.getElementById('payChargeNote');
+  if (note && cfg.configured && cfg.charged && cfg.charged !== cfg.display) {
+    note.textContent = `Billed by Paystack as ${cfg.charged}, the local-currency equivalent.`;
+    note.hidden = false;
+  }
 });
 
 // ── Check for valid stored token ──────────────────────────────────────────────
